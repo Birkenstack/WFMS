@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class WorkflowController {
-
+    String currentUser = "Justin"; // hardcoded for now
     private final WorkflowService service;
 
     public WorkflowController(WorkflowService service) {
@@ -17,7 +17,12 @@ public class WorkflowController {
 
     @GetMapping("/")
     public String dashboard(Model model) {
-        model.addAttribute("items", service.getAllItems());
+        String currentUser = "Justin"; // hardcoded for now
+
+        var items = service.getItemsForUser(currentUser);
+        model.addAttribute("items", items);
+        model.addAttribute("username", currentUser);
+
         return "dashboard";
     }
 
@@ -28,8 +33,12 @@ public class WorkflowController {
 
     @PostMapping("/create")
     public String createItem(@RequestParam String title,
-                             @RequestParam String description) {
-        service.createItem(title, description);
+                             @RequestParam String description,
+                             @RequestParam String assignee) {
+        if (title.isEmpty() || description.isEmpty() || assignee.isEmpty()) {
+            return "create"; // simple validation for now change later
+        }
+        service.createItem(title, description, assignee);
         return "redirect:/";
     }
 
@@ -38,5 +47,6 @@ public class WorkflowController {
                             @RequestParam Status status) {
         service.updateStatus(id, status);
         return "redirect:/";
-}
+    }
+
 }
