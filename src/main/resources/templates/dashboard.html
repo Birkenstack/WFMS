@@ -1,0 +1,10 @@
+<h1>Workflow Dashboard</h1>
+
+<a href="/create">Create New Item</a>
+
+<ul>
+  <li th:each="item : ${items}">
+    <span th:text="${item.title}"></span> -
+    <span th:text="${item.description}"></span>
+  </li>
+</ul>
