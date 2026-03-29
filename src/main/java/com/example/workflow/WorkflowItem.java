@@ -5,6 +5,7 @@ public class WorkflowItem {
     private String title;
     private String description;
     private Status status;
+    private String assignee;
 
     public WorkflowItem() {
     }
@@ -42,5 +43,13 @@ public class WorkflowItem {
     }
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public String getAssignee() {
+        return assignee;
+    }
+
+    public void setAssignee(String assignee) {
+        this.assignee = assignee;
     }
 }

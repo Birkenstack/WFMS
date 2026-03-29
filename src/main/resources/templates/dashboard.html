@@ -1,12 +1,13 @@
 <h1>Workflow Dashboard</h1>
 
 <a href="/create">Create New Item</a>
-
+<p th:if="${#lists.isEmpty(items)}">No tasks assigned to you.</p>
 <ul>
   <li th:each="item : ${items}">
     <strong th:text="${item.title}"></strong> -
     <span th:text="${item.description}"></span> -
     <span th:text="${item.status}"></span>
+    <span th:text="${item.assignee}"></span>
 
     <form action="/updateStatus" method="post">
       <input type="hidden" name="id" th:value="${item.id}" />
