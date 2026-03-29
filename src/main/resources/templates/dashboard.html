@@ -4,7 +4,21 @@
 
 <ul>
   <li th:each="item : ${items}">
-    <span th:text="${item.title}"></span> -
-    <span th:text="${item.description}"></span>
+    <strong th:text="${item.title}"></strong> -
+    <span th:text="${item.description}"></span> -
+    <span th:text="${item.status}"></span>
+
+    <form action="/updateStatus" method="post">
+      <input type="hidden" name="id" th:value="${item.id}" />
+
+      <select name="status">
+        <option value="SUBMITTED">SUBMITTED</option>
+        <option value="IN_REVIEW">IN_REVIEW</option>
+        <option value="APPROVED">APPROVED</option>
+        <option value="COMPLETED">COMPLETED</option>
+      </select>
+
+      <button type="submit">Update</button>
+    </form>
   </li>
 </ul>

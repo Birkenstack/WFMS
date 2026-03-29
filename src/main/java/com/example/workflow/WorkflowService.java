@@ -23,4 +23,13 @@ public class WorkflowService {
     public List<WorkflowItem> getAllItems() {
         return repo.findAll();
     }
+
+    public void updateStatus(Long id, Status newStatus) {
+    for (WorkflowItem item : repo.findAll()) {
+        if (item.getId().equals(id)) {
+            item.setStatus(newStatus);
+            break;
+        }
+    }
+}
 }

@@ -4,6 +4,7 @@ public class WorkflowItem {
     private Long id;
     private String title;
     private String description;
+    private Status status;
 
     public WorkflowItem() {
     }
@@ -34,5 +35,12 @@ public class WorkflowItem {
     }
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+    public void setStatus(Status status) {
+        this.status = status;
     }
 }
