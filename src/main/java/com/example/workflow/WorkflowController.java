@@ -23,6 +23,11 @@ public class WorkflowController {
         this.service = service;
     }
 
+    @GetMapping("/login")
+    public String loginPage() {
+        return "login";
+    }
+
     @GetMapping("/")
     public String dashboard(@RequestParam(defaultValue = "") String project,
                             @RequestParam(required = false) Status status,

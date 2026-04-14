@@ -30,40 +30,65 @@ public class DataInitializer implements CommandLineRunner {
         AppUser employeeThree = ensureUser("sevin", "employee123", "Sevin Employee", Role.EMPLOYEE);
         migrateLegacyCasey(employeeTwo, manager);
 
-        if (workflowRepository.count() == 0) {
-            workflowRepository.save(seedTask(
-                    "Sprint 3 Demo Prep",
-                    "Prepare the integrated sprint 3 demo workflow.",
-                    "Workflow",
-                    Priority.HIGH,
-                    TaskType.STORY,
-                    Status.IN_REVIEW,
-                    manager,
-                    employeeOne,
-                    LocalDate.now().plusDays(3)));
+        ensureTask("Sprint 3 Demo Prep",
+                "Prepare the integrated sprint 3 demo workflow.",
+                "Workflow",
+                Priority.HIGH,
+                TaskType.STORY,
+                Status.IN_REVIEW,
+                manager,
+                employeeOne,
+                LocalDate.now().plusDays(3));
 
-            workflowRepository.save(seedTask(
-                    "Fix task permissions",
-                    "Verify managers and employees see the correct actions.",
-                    "Platform",
-                    Priority.MEDIUM,
-                    TaskType.BUG,
-                    Status.SUBMITTED,
-                    manager,
-                    employeeTwo,
-                    LocalDate.now().plusDays(5)));
+        ensureTask("Fix task permissions",
+                "Verify managers and employees see the correct actions.",
+                "Platform",
+                Priority.MEDIUM,
+                TaskType.BUG,
+                Status.SUBMITTED,
+                manager,
+                employeeTwo,
+                LocalDate.now().plusDays(5));
 
-            workflowRepository.save(seedTask(
-                    "Review employee dashboard",
-                    "Check that employee task visibility only shows assigned work.",
-                    "Platform",
-                    Priority.LOW,
-                    TaskType.TASK,
-                    Status.SUBMITTED,
-                    manager,
-                    employeeThree,
-                    LocalDate.now().plusDays(7)));
-        }
+        ensureTask("Review employee dashboard",
+                "Check that employee task visibility only shows assigned work.",
+                "Platform",
+                Priority.LOW,
+                TaskType.TASK,
+                Status.SUBMITTED,
+                manager,
+                employeeThree,
+                LocalDate.now().plusDays(7));
+
+        ensureTask("Build kanban walkthrough",
+                "Prepare a polished board-style walkthrough for the presentation.",
+                "Presentation",
+                Priority.HIGH,
+                TaskType.STORY,
+                Status.APPROVED,
+                manager,
+                employeeOne,
+                LocalDate.now().plusDays(2));
+
+        ensureTask("Validate manager role rules",
+                "Confirm manager-only actions are visible and functional.",
+                "Security",
+                Priority.HIGH,
+                TaskType.BUG,
+                Status.IN_REVIEW,
+                manager,
+                employeeTwo,
+                LocalDate.now().plusDays(4));
+
+        ensureTask("Review seeded demo data",
+                "Make sure each employee has at least one assigned task for the demo.",
+                "Presentation",
+                Priority.MEDIUM,
+                TaskType.TASK,
+                Status.SUBMITTED,
+                manager,
+                employeeThree,
+                LocalDate.now().plusDays(6));
     }
 
     private void migrateLegacyCasey(AppUser replacementAssignee, AppUser fallbackCreator) {
@@ -116,5 +141,13 @@ public class DataInitializer implements CommandLineRunner {
         item.setCreatedAt(java.time.LocalDateTime.now());
         item.setArchived(false);
         return item;
+    }
+
+    private void ensureTask(String title, String description, String project, Priority priority,
+                            TaskType taskType, Status status, AppUser createdBy, AppUser assignee,
+                            LocalDate dueDate) {
+        if (!workflowRepository.existsByTitleIgnoreCase(title)) {
+            workflowRepository.save(seedTask(title, description, project, priority, taskType, status, createdBy, assignee, dueDate));
+        }
     }
 }

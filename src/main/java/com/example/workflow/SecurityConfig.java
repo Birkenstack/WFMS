@@ -20,7 +20,12 @@ public class SecurityConfig {
                         .requestMatchers("/updateStatus", "/").authenticated()
                         .anyRequest().authenticated())
                 .formLogin(Customizer.withDefaults())
-                .logout(logout -> logout.logoutSuccessUrl("/login?logout"))
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login?logout")
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true)
+                        .deleteCookies("JSESSIONID"))
                 .csrf(Customizer.withDefaults());
         return http.build();
     }

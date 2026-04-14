@@ -1,0 +1,23 @@
+<h1>Workflow Login</h1>
+
+<p>Use a manager or employee account to access the workflow system.</p>
+
+<p th:if="${param.error}">Login failed. Check your username and password.</p>
+<p th:if="${param.logout}">You have been logged out.</p>
+
+<form action="/login" method="post">
+  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+  <label for="username">Username:</label>
+  <input id="username" name="username" />
+
+  <label for="password">Password:</label>
+  <input id="password" name="password" type="password" />
+
+  <button type="submit">Login</button>
+</form>
+
+<h2>Demo Accounts</h2>
+<p>Manager: <strong>manager</strong> / <strong>manager123</strong></p>
+<p>Employee: <strong>justin</strong> / <strong>employee123</strong></p>
+<p>Employee: <strong>johnny</strong> / <strong>employee123</strong></p>
+<p>Employee: <strong>sevin</strong> / <strong>employee123</strong></p>
