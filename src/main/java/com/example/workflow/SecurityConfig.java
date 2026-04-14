@@ -15,11 +15,14 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/error", "/css/**").permitAll()
+                        .requestMatchers("/login", "/error", "/app.css", "/css/**", "/js/**", "/images/**").permitAll()
                         .requestMatchers("/create", "/items/*/edit", "/items/*/archive").hasRole("MANAGER")
                         .requestMatchers("/updateStatus", "/").authenticated()
                         .anyRequest().authenticated())
-                .formLogin(Customizer.withDefaults())
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .defaultSuccessUrl("/", true)
+                        .permitAll())
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout")

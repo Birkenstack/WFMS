@@ -1,44 +1,91 @@
-<h1 th:text="${editMode ? 'Edit Workflow Item' : 'Create Workflow Item'}"></h1>
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title th:text="${editMode ? 'Edit Workflow Item' : 'Create Workflow Item'}"></title>
+  <link rel="stylesheet" href="/app.css" />
+</head>
+<body>
+  <main class="shell">
+    <section class="panel">
+      <div class="hero-top">
+        <div>
+          <h1 th:text="${editMode ? 'Refine Workflow Item' : 'Create Workflow Item'}"></h1>
+          <p class="subtle">Managers can define assignments, delivery dates, and task metadata from one place.</p>
+        </div>
+        <div class="meta-row">
+          <span class="badge" th:text="${currentUser.displayName}"></span>
+          <span class="badge role-manager" th:text="${currentUser.role}"></span>
+        </div>
+      </div>
 
-<p>
-  Signed in as <strong th:text="${currentUser.displayName}"></strong>
-  (<span th:text="${currentUser.role}"></span>)
-</p>
+      <div th:if="${error}" class="notice error" th:text="${error}"></div>
 
-<p th:if="${error}" th:text="${error}"></p>
+      <form th:action="${formAction}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
-<form th:action="${formAction}" method="post">
-  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-  <input name="title" placeholder="Title" th:value="${item.title}" />
-  <input name="description" placeholder="Description" th:value="${item.description}" />
-  <input name="project" placeholder="Project (e.g. Senior Design)" th:value="${item.project}" list="projects-list" />
-  <datalist id="projects-list">
-    <option th:each="projectOption : ${projects}" th:value="${projectOption}"></option>
-  </datalist>
-  <label for="assignee">Assignee:</label>
-  <select id="assignee" name="assignee">
-    <option th:each="assigneeOption : ${assignees}"
-            th:value="${assigneeOption.username}"
-            th:text="${assigneeOption.displayName}"
-            th:selected="${item.assignee != null and assigneeOption.username == item.assignee.username}"></option>
-  </select>
-  <label for="taskType">Task type:</label>
-  <select id="taskType" name="taskType">
-    <option th:each="taskTypeOption : ${taskTypes}"
-            th:value="${taskTypeOption}"
-            th:text="${taskTypeOption}"
-            th:selected="${taskTypeOption == item.taskType}"></option>
-  </select>
-  <label for="priority">Priority:</label>
-  <select id="priority" name="priority">
-    <option th:each="priorityOption : ${priorities}"
-            th:value="${priorityOption}"
-            th:text="${priorityOption}"
-            th:selected="${priorityOption == item.priority}"></option>
-  </select>
-  <label for="dueDate">Due date:</label>
-  <input id="dueDate" type="date" name="dueDate" th:value="${item.dueDate}" />
-  <button type="submit" th:text="${editMode ? 'Save Changes' : 'Create'}"></button>
-</form>
+        <div class="field-stack full-width">
+          <label for="title">Title</label>
+          <input id="title" name="title" placeholder="Title" th:value="${item.title}" />
+        </div>
 
-<a th:href="@{/}">Back to Dashboard</a>
+        <div class="field-stack full-width">
+          <label for="description">Description</label>
+          <textarea id="description" name="description" placeholder="Describe the work item" th:text="${item.description}"></textarea>
+        </div>
+
+        <div class="field-grid">
+          <div class="field">
+            <label for="project">Project</label>
+            <input id="project" name="project" placeholder="Project (e.g. Senior Design)" th:value="${item.project}" list="projects-list" />
+            <datalist id="projects-list">
+              <option th:each="projectOption : ${projects}" th:value="${projectOption}"></option>
+            </datalist>
+          </div>
+
+          <div class="field">
+            <label for="assignee">Assignee</label>
+            <select id="assignee" name="assignee">
+              <option th:each="assigneeOption : ${assignees}"
+                      th:value="${assigneeOption.username}"
+                      th:text="${assigneeOption.displayName}"
+                      th:selected="${item.assignee != null and assigneeOption.username == item.assignee.username}"></option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="taskType">Task Type</label>
+            <select id="taskType" name="taskType">
+              <option th:each="taskTypeOption : ${taskTypes}"
+                      th:value="${taskTypeOption}"
+                      th:text="${taskTypeOption}"
+                      th:selected="${taskTypeOption == item.taskType}"></option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="priority">Priority</label>
+            <select id="priority" name="priority">
+              <option th:each="priorityOption : ${priorities}"
+                      th:value="${priorityOption}"
+                      th:text="${priorityOption}"
+                      th:selected="${priorityOption == item.priority}"></option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="dueDate">Due Date</label>
+            <input id="dueDate" type="date" name="dueDate" th:value="${item.dueDate}" />
+          </div>
+        </div>
+
+        <div class="action-row" style="margin-top: 18px;">
+          <button type="submit" th:text="${editMode ? 'Save Changes' : 'Create Task'}"></button>
+          <a class="button-link secondary" th:href="@{/}">Back to Dashboard</a>
+        </div>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

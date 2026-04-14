@@ -1,23 +1,52 @@
-<h1>Workflow Login</h1>
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workflow Login</title>
+  <link rel="stylesheet" href="/app.css" />
+</head>
+<body>
+  <main class="login-shell">
+    <section class="login-card">
+      <div class="login-layout">
+        <div class="login-main">
+          <h1>Workflow Access Portal</h1>
+          <p class="subtle">Sign in as a manager or employee to review active delivery work, approvals, and assignments.</p>
 
-<p>Use a manager or employee account to access the workflow system.</p>
+          <div th:if="${param.error}" class="notice error">Login failed. Check your username and password.</div>
+          <div th:if="${param.logout}" class="notice success">You have been logged out.</div>
 
-<p th:if="${param.error}">Login failed. Check your username and password.</p>
-<p th:if="${param.logout}">You have been logged out.</p>
+          <form action="/login" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <div class="field-stack full-width">
+              <label for="username">Username</label>
+              <input id="username" name="username" />
+            </div>
 
-<form action="/login" method="post">
-  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-  <label for="username">Username:</label>
-  <input id="username" name="username" />
+            <div class="field-stack full-width">
+              <label for="password">Password</label>
+              <input id="password" name="password" type="password" />
+            </div>
 
-  <label for="password">Password:</label>
-  <input id="password" name="password" type="password" />
+            <div class="action-row" style="margin-top: 18px;">
+              <button type="submit">Login</button>
+            </div>
+          </form>
+        </div>
 
-  <button type="submit">Login</button>
-</form>
-
-<h2>Demo Accounts</h2>
-<p>Manager: <strong>manager</strong> / <strong>manager123</strong></p>
-<p>Employee: <strong>justin</strong> / <strong>employee123</strong></p>
-<p>Employee: <strong>johnny</strong> / <strong>employee123</strong></p>
-<p>Employee: <strong>sevin</strong> / <strong>employee123</strong></p>
+        <aside class="login-side">
+          <h2>Demo Accounts</h2>
+          <ul class="demo-list">
+            <li><strong>Manager</strong>: `manager` / `manager123`</li>
+            <li><strong>Employee</strong>: `justin` / `employee123`</li>
+            <li><strong>Employee</strong>: `johnny` / `employee123`</li>
+            <li><strong>Employee</strong>: `sevin` / `employee123`</li>
+          </ul>
+          <p class="subtle">Managers can create, edit, assign, and archive work. Employees see only their assigned tasks.</p>
+        </aside>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,74 +1,112 @@
-<h1>Workflow Dashboard</h1>
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workflow Dashboard</title>
+  <link rel="stylesheet" href="/app.css" />
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div class="hero-top">
+        <div>
+          <h1>Workflow Control Board</h1>
+          <p class="subtle">Track assignments, approvals, and presentation-ready progress across the team.</p>
+        </div>
+        <div class="meta-row">
+          <span class="badge" th:text="${currentUser.displayName}"></span>
+          <span class="badge" th:classappend="${isManager} ? ' role-manager' : ' role-employee'" th:text="${currentUser.role}"></span>
+        </div>
+      </div>
 
-<p>
-  Signed in as <strong th:text="${currentUser.displayName}"></strong>
-  (<span th:text="${currentUser.role}"></span>)
-</p>
-<form action="/logout" method="post">
-  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-  <button type="submit">Logout</button>
-</form>
+      <div class="toolbar">
+        <form action="/" method="get" class="filters">
+          <div class="field">
+            <label for="project">Project</label>
+            <select id="project" name="project">
+              <option value="">All projects</option>
+              <option th:each="projectOption : ${projects}"
+                      th:value="${projectOption}"
+                      th:text="${projectOption}"
+                      th:selected="${projectOption == projectFilter}"></option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="priority">Priority</label>
+            <select id="priority" name="priority">
+              <option value="">All priorities</option>
+              <option th:each="priorityOption : ${priorities}"
+                      th:value="${priorityOption}"
+                      th:text="${priorityOption}"
+                      th:selected="${priorityOption == selectedPriority}"></option>
+            </select>
+          </div>
+          <button type="submit">Apply Filters</button>
+        </form>
 
-<form action="/" method="get">
-  <label for="project">Project:</label>
-  <select id="project" name="project">
-    <option value="">All projects</option>
-    <option th:each="projectOption : ${projects}"
-            th:value="${projectOption}"
-            th:text="${projectOption}"
-            th:selected="${projectOption == projectFilter}"></option>
-  </select>
-  <label for="priority">Priority:</label>
-  <select id="priority" name="priority">
-    <option value="">All priorities</option>
-    <option th:each="priorityOption : ${priorities}"
-            th:value="${priorityOption}"
-            th:text="${priorityOption}"
-            th:selected="${priorityOption == selectedPriority}"></option>
-  </select>
-  <button type="submit">Load</button>
-</form>
+        <div class="action-row">
+          <a th:if="${isManager}" class="button-link" th:href="@{/create}">New Task</a>
+          <form action="/logout" method="post" class="inline-form">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <button type="submit" class="secondary">Logout</button>
+          </form>
+        </div>
+      </div>
 
-<p th:if="${message}" th:text="${message}"></p>
-<p th:if="${error}" th:text="${error}"></p>
+      <div th:if="${message}" class="notice success" th:text="${message}"></div>
+      <div th:if="${error}" class="notice error" th:text="${error}"></div>
+    </section>
 
-<a th:if="${isManager}" th:href="@{/create}">Create New Item</a>
-<p th:if="${#lists.isEmpty(items)}">No tasks matched the current filters.</p>
+    <p th:if="${#lists.isEmpty(items)}" class="subtle">No tasks matched the current filters.</p>
 
-<section th:each="statusEntry : ${itemsByStatus}">
-  <h2 th:text="${statusEntry.key}"></h2>
-  <p th:if="${#lists.isEmpty(statusEntry.value)}">No items in this status.</p>
-  <ul th:if="${!#lists.isEmpty(statusEntry.value)}">
-    <li th:each="item : ${statusEntry.value}">
-      <strong th:text="${item.project}"></strong> :
-      <span th:text="${item.title}"></span> -
-      <span th:text="${item.taskType}"></span> -
-      <span th:text="${item.priority}"></span> -
-      <span th:text="${item.assignee.displayName}"></span>
-      <span th:if="${item.dueDate != null}" th:text="${'due ' + item.dueDate}"></span>
-      <span th:text="${'created by ' + item.createdBy.displayName}"></span>
-      <p th:text="${item.description}"></p>
+    <section class="board">
+      <article class="board-column" th:each="statusEntry : ${itemsByStatus}">
+        <h2 th:text="${statusEntry.key}"></h2>
+        <p class="column-count" th:text="${#lists.size(statusEntry.value) + ' item(s)'}"></p>
+        <p th:if="${#lists.isEmpty(statusEntry.value)}" class="subtle">No items in this status.</p>
 
-      <form action="/updateStatus" method="post">
-        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-        <input type="hidden" name="id" th:value="${item.id}" />
+        <div th:if="${!#lists.isEmpty(statusEntry.value)}" class="task-list">
+          <section class="task-card" th:each="item : ${statusEntry.value}">
+            <div class="task-tags">
+              <span th:text="${item.project}"></span>
+              <span th:text="${item.taskType}"></span>
+              <span th:text="${item.priority}"></span>
+            </div>
 
-        <select name="status">
-          <option th:each="availableStatus : ${statuses}"
-                  th:value="${availableStatus}"
-                  th:text="${availableStatus}"
-                  th:selected="${availableStatus == item.status}"></option>
-        </select>
+            <h3 th:text="${item.title}"></h3>
+            <p class="subtle" th:text="${item.description}"></p>
 
-        <button type="submit">Update</button>
-      </form>
+            <div class="task-tags">
+              <span th:text="${'Assignee: ' + item.assignee.displayName}"></span>
+              <span th:text="${'Created by: ' + item.createdBy.displayName}"></span>
+              <span th:if="${item.dueDate != null}" th:text="${'Due: ' + item.dueDate}"></span>
+            </div>
 
-      <a th:if="${isManager}" th:href="@{/items/{id}/edit(id=${item.id})}">Edit</a>
+            <div class="task-actions">
+              <form action="/updateStatus" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <input type="hidden" name="id" th:value="${item.id}" />
+                <select name="status">
+                  <option th:each="availableStatus : ${statuses}"
+                          th:value="${availableStatus}"
+                          th:text="${availableStatus}"
+                          th:selected="${availableStatus == item.status}"></option>
+                </select>
+                <button type="submit">Update</button>
+              </form>
 
-      <form th:if="${isManager}" th:action="@{/items/{id}/archive(id=${item.id})}" method="post">
-        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-        <button type="submit">Archive</button>
-      </form>
-    </li>
-  </ul>
-</section>
+              <a th:if="${isManager}" class="button-link secondary" th:href="@{/items/{id}/edit(id=${item.id})}">Edit</a>
+
+              <form th:if="${isManager}" th:action="@{/items/{id}/archive(id=${item.id})}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <button type="submit" class="danger">Archive</button>
+              </form>
+            </div>
+          </section>
+        </div>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
