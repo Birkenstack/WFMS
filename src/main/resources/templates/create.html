@@ -1,10 +1,43 @@
-<h1>Create Workflow Item</h1>
+<h1 th:text="${editMode ? 'Edit Workflow Item' : 'Create Workflow Item'}"></h1>
 
-<form action="/create" method="post">
-  <input name="title" placeholder="Title" />
-  <input name="description" placeholder="Description" />
-  <input name="assignee" placeholder="Assignee (e.g. Justin)" />
-  <button type="submit">Create</button>
+<p>
+  Signed in as <strong th:text="${currentUser.displayName}"></strong>
+  (<span th:text="${currentUser.role}"></span>)
+</p>
+
+<p th:if="${error}" th:text="${error}"></p>
+
+<form th:action="${formAction}" method="post">
+  <input name="title" placeholder="Title" th:value="${item.title}" />
+  <input name="description" placeholder="Description" th:value="${item.description}" />
+  <input name="project" placeholder="Project (e.g. Senior Design)" th:value="${item.project}" list="projects-list" />
+  <datalist id="projects-list">
+    <option th:each="projectOption : ${projects}" th:value="${projectOption}"></option>
+  </datalist>
+  <label for="assignee">Assignee:</label>
+  <select id="assignee" name="assignee">
+    <option th:each="assigneeOption : ${assignees}"
+            th:value="${assigneeOption.username}"
+            th:text="${assigneeOption.displayName}"
+            th:selected="${item.assignee != null and assigneeOption.username == item.assignee.username}"></option>
+  </select>
+  <label for="taskType">Task type:</label>
+  <select id="taskType" name="taskType">
+    <option th:each="taskTypeOption : ${taskTypes}"
+            th:value="${taskTypeOption}"
+            th:text="${taskTypeOption}"
+            th:selected="${taskTypeOption == item.taskType}"></option>
+  </select>
+  <label for="priority">Priority:</label>
+  <select id="priority" name="priority">
+    <option th:each="priorityOption : ${priorities}"
+            th:value="${priorityOption}"
+            th:text="${priorityOption}"
+            th:selected="${priorityOption == item.priority}"></option>
+  </select>
+  <label for="dueDate">Due date:</label>
+  <input id="dueDate" type="date" name="dueDate" th:value="${item.dueDate}" />
+  <button type="submit" th:text="${editMode ? 'Save Changes' : 'Create'}"></button>
 </form>
 
-<a href="/">Back to Dashboard</a>
+<a th:href="@{/}">Back to Dashboard</a>
