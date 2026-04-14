@@ -5,6 +5,7 @@
   (<span th:text="${currentUser.role}"></span>)
 </p>
 <form action="/logout" method="post">
+  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
   <button type="submit">Logout</button>
 </form>
 
@@ -49,6 +50,7 @@
       <p th:text="${item.description}"></p>
 
       <form action="/updateStatus" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
         <input type="hidden" name="id" th:value="${item.id}" />
 
         <select name="status">
@@ -64,6 +66,7 @@
       <a th:if="${isManager}" th:href="@{/items/{id}/edit(id=${item.id})}">Edit</a>
 
       <form th:if="${isManager}" th:action="@{/items/{id}/archive(id=${item.id})}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
         <button type="submit">Archive</button>
       </form>
     </li>

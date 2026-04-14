@@ -8,6 +8,7 @@
 <p th:if="${error}" th:text="${error}"></p>
 
 <form th:action="${formAction}" method="post">
+  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
   <input name="title" placeholder="Title" th:value="${item.title}" />
   <input name="description" placeholder="Description" th:value="${item.description}" />
   <input name="project" placeholder="Project (e.g. Senior Design)" th:value="${item.project}" list="projects-list" />
