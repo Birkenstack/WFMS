@@ -47,6 +47,7 @@
 
         <div class="action-row">
           <a th:if="${isManager}" class="button-link" th:href="@{/create}">New Task</a>
+          <a th:if="${isManager}" class="button-link secondary" th:href="@{/archived}">Archived Tasks</a>
           <form action="/logout" method="post" class="inline-form">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
             <button type="submit" class="secondary">Logout</button>

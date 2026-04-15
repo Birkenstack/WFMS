@@ -8,4 +8,5 @@ public interface WorkflowRepository extends JpaRepository<WorkflowItem, Long> {
     List<WorkflowItem> findByArchivedFalseOrderByCreatedAtDesc();
     List<WorkflowItem> findByArchivedFalseAndAssigneeUsernameIgnoreCaseOrderByCreatedAtDesc(String username);
     boolean existsByTitleIgnoreCase(String title);
+    List<WorkflowItem> findByArchivedTrueOrderByCreatedAtDesc();
 }

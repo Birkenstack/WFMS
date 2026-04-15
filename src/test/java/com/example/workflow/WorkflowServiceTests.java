@@ -119,4 +119,22 @@ class WorkflowServiceTests {
         assertEquals(Role.EMPLOYEE, userRepository.findByUsernameIgnoreCase("johnny").orElseThrow().getRole());
         assertEquals(Role.EMPLOYEE, userRepository.findByUsernameIgnoreCase("sevin").orElseThrow().getRole());
     }
+
+    @Test
+    void archivedTaskAppearsInArchivedList(){
+        WorkflowItem item = service.createItem("Employee Task",
+            "Justin's work",
+            "justin",
+            "Platform",
+            Priority.MEDIUM,
+            TaskType.TASK,
+            "manager",
+            null);
+        
+        service.archiveItem(item.getId(), "manager");
+        var archivedItems = service.getArchivedItems();
+
+        assertTrue(archivedItems.stream().anyMatch(archivedItem -> archivedItem.getId().equals(item.getId())));
+
+    }
 }
