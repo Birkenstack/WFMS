@@ -35,3 +35,7 @@ build/
 .DS_Store
 *.log
 *.jar
+
+### H2 Database ###
+*.mv.db
+*.trace.db
