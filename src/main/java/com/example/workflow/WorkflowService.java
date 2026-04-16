@@ -112,6 +112,10 @@ public class WorkflowService {
                 .toList();
     }
 
+    public List<WorkflowItem> getArchivedItems() {
+        return workflowRepository.findByArchivedTrueOrderByCreatedAtDesc();
+    }
+
     public List<AppUser> getAssignableUsers() {
         return userRepository.findByRoleOrderByDisplayNameAsc(Role.EMPLOYEE);
     }

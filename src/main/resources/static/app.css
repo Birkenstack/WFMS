@@ -236,6 +236,10 @@ button.danger {
   font-size: 1.05rem;
 }
 
+.task-link {
+  color: inherit;
+}
+
 .task-tags,
 .task-actions {
   display: flex;
@@ -255,16 +259,84 @@ button.danger {
 .task-actions {
   margin-top: 12px;
   align-items: center;
+  width: 100%;
 }
 
 .task-actions form {
   display: inline-flex;
+  flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+  min-width: 0;
+}
+
+.task-actions select {
+  min-width: 0;
 }
 
 .panel {
   padding: 24px;
+}
+
+.detail-panel {
+  margin-top: 20px;
+}
+
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.detail-id {
+  margin: 0;
+  color: var(--muted);
+}
+
+.detail-title {
+  margin: 20px 0 10px;
+  font-size: 1.8rem;
+}
+
+.detail-description {
+  margin: 0 0 24px;
+  line-height: 1.7;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.detail-card {
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--surface-strong);
+}
+
+.detail-card h3 {
+  margin: 0 0 12px;
+}
+
+.detail-list {
+  margin: 0;
+}
+
+.detail-list div + div {
+  margin-top: 14px;
+}
+
+.detail-list dt {
+  margin-bottom: 4px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.detail-list dd {
+  margin: 0;
 }
 
 .field-grid {
@@ -317,6 +389,25 @@ button.danger {
   .board {
     grid-template-columns: 1fr 1fr;
   }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .task-actions {
+    align-items: stretch;
+  }
+
+  .task-actions > a,
+  .task-actions > form {
+    flex: 1 1 100%;
+  }
+
+  .task-actions .button-link,
+  .task-actions button,
+  .task-actions select {
+    width: 100%;
+  }
 }
 
 @media (max-width: 720px) {
@@ -327,8 +418,10 @@ button.danger {
   .hero-top,
   .toolbar,
   .action-row,
-  .meta-row {
+  .meta-row,
+  .detail-header {
     flex-direction: column;
     align-items: flex-start;
   }
 }
+

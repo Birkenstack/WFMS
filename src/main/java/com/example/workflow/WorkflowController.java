@@ -61,6 +61,36 @@ public class WorkflowController {
         return "dashboard";
     }
 
+    @GetMapping("/archived")
+    public String archivedPage(Authentication authentication, Model model) {
+        AppUser currentUser = service.getUser(authentication.getName());
+        if (currentUser.getRole() != Role.MANAGER) {
+            return "redirect:/";
+        }
+        model.addAttribute("items", service.getArchivedItems());
+        model.addAttribute("currentUser", currentUser);
+        model.addAttribute("isManager", true);
+        return "archived";
+    }
+
+    @GetMapping("/items/{id}")
+    public String itemDetailPage(@PathVariable Long id,
+                                 Authentication authentication,
+                                 Model model,
+                                 RedirectAttributes redirectAttributes) {
+        AppUser currentUser = service.getUser(authentication.getName());
+        try {
+            WorkflowItem item = service.getItem(id, authentication.getName());
+            model.addAttribute("item", item);
+            model.addAttribute("currentUser", currentUser);
+            model.addAttribute("isManager", currentUser.getRole() == Role.MANAGER);
+            return "task-detail";
+        } catch (RuntimeException e) {
+            redirectAttributes.addAttribute("error", e.getMessage());
+            return "redirect:/";
+        }
+    }
+
     @GetMapping("/create")
     public String createPage(Authentication authentication, Model model) {
         String username = authentication.getName();
