@@ -39,3 +39,5 @@ build/
 ### H2 Database ###
 *.mv.db
 *.trace.db
+*.mv.db
+*.trace.db
