@@ -2,23 +2,32 @@
 
 ## Overview
 
-This project is a simplified workflow and task management system built with Spring Boot. It is designed to support a small team workflow similar to a lightweight Jira-style application.
+This project is a simplified workflow management system built for the software engineering semester project. It supports authenticated users, manager and employee roles, task assignment, workflow status tracking, and persistent storage.
 
-The system supports:
+The current system is intended to demonstrate an integrated task workflow application similar to a lightweight Jira-style tool.
 
-- login-based access
-- manager and employee roles
-- task creation and assignment
-- task editing
-- task status tracking
-- project-based organization
-- priority and task type tracking
-- task archiving
-- persistent storage with an H2 database
+## Core Features
 
-## Current Roles
+- Login-based access using Spring Security
+- Two user roles: `MANAGER` and `EMPLOYEE`
+- Manager task creation, editing, assignment, and archiving
+- Employee task visibility limited to assigned work
+- Workflow status progression:
+  - `SUBMITTED`
+  - `IN_REVIEW`
+  - `APPROVED`
+  - `COMPLETED`
+- Task metadata:
+  - project
+  - priority
+  - task type
+  - assignee
+  - creator
+  - due date
+- Persistent storage using H2 and Spring Data JPA
+- Server-rendered UI with Thymeleaf
 
-The application currently supports two user roles:
+## Roles
 
 ### Manager
 
@@ -35,7 +44,7 @@ Managers can:
 
 Employees can:
 
-- log in and view only tasks assigned to them
+- log in and view only the tasks assigned to them
 - update the status of their own tasks
 
 Employees cannot:
@@ -44,30 +53,6 @@ Employees cannot:
 - edit tasks
 - archive tasks
 - see tasks assigned to other employees
-
-## Current Task Fields
-
-Each workflow item can include:
-
-- title
-- description
-- project
-- priority
-- task type
-- assignee
-- creator
-- due date
-- status
-- created timestamp
-- archive state
-
-## Workflow Status Flow
-
-The current workflow progression is:
-
-`SUBMITTED -> IN_REVIEW -> APPROVED -> COMPLETED`
-
-The service enforces valid transitions.
 
 ## Tech Stack
 
@@ -91,7 +76,7 @@ cd /Users/justin/Projects/software-engineering/workflow
 
 Then open:
 
-[http://localhost:8080](http://localhost:8080)
+[http://localhost:8080/login](http://localhost:8080/login)
 
 ## Demo Accounts
 
@@ -111,34 +96,25 @@ Then open:
 - Username: `sevin`
 - Password: `employee123`
 
-## How To Test The System Manually
+## Manual Demo Flow
 
-### Manager workflow
+### Manager flow
 
 1. Log in as `manager`
-2. View all tasks on the dashboard
+2. View all workflow items on the dashboard
 3. Create a new task
-4. Assign the task to `justin`, `johnny`, or `sevin`
-5. Edit a task
-6. Update a task status
-7. Archive a task
-8. Log out
+4. Edit a task
+5. Update a task status
+6. Archive a task
+7. Log out
 
-### Employee workflow
+### Employee flow
 
-1. Log in as one of the employee accounts
-2. Confirm that only assigned tasks are visible
-3. Update the status of one assigned task
-4. Confirm there are no create, edit, or archive options
+1. Log in as `justin`, `johnny`, or `sevin`
+2. Confirm only assigned tasks are visible
+3. Update one task status
+4. Confirm create/edit/archive controls are not available
 5. Log out
-
-### Persistence check
-
-1. Start the application
-2. Make a change such as creating or updating a task
-3. Stop the application
-4. Start it again
-5. Confirm the task data is still present
 
 ## Running Tests
 
@@ -148,44 +124,31 @@ Run:
 ./mvnw test
 ```
 
-This verifies:
+The test suite covers:
 
 - application startup
-- task creation
 - role-based task visibility
-- role-based task permissions
-- status transition behavior
+- role-based permissions
+- task creation
+- task editing
+- status transition rules
 - archiving behavior
 
-## Project Structure
+## Important Files
 
-Main files and responsibilities:
+- [src/main/java/com/example/workflow/WorkflowApplication.java](/Users/justin/Projects/software-engineering/workflow/src/main/java/com/example/workflow/WorkflowApplication.java) - Spring Boot entry point
+- [src/main/java/com/example/workflow/SecurityConfig.java](/Users/justin/Projects/software-engineering/workflow/src/main/java/com/example/workflow/SecurityConfig.java) - authentication and authorization rules
+- [src/main/java/com/example/workflow/WorkflowController.java](/Users/justin/Projects/software-engineering/workflow/src/main/java/com/example/workflow/WorkflowController.java) - page routing and web requests
+- [src/main/java/com/example/workflow/WorkflowService.java](/Users/justin/Projects/software-engineering/workflow/src/main/java/com/example/workflow/WorkflowService.java) - workflow rules and role-based behavior
+- [src/main/java/com/example/workflow/WorkflowItem.java](/Users/justin/Projects/software-engineering/workflow/src/main/java/com/example/workflow/WorkflowItem.java) - task entity
+- [src/main/java/com/example/workflow/AppUser.java](/Users/justin/Projects/software-engineering/workflow/src/main/java/com/example/workflow/AppUser.java) - authenticated user entity
+- [src/main/java/com/example/workflow/DataInitializer.java](/Users/justin/Projects/software-engineering/workflow/src/main/java/com/example/workflow/DataInitializer.java) - seeded demo users and tasks
+- [src/main/resources/templates/login.html](/Users/justin/Projects/software-engineering/workflow/src/main/resources/templates/login.html) - login page
+- [src/main/resources/templates/dashboard.html](/Users/justin/Projects/software-engineering/workflow/src/main/resources/templates/dashboard.html) - main dashboard
+- [src/main/resources/templates/create.html](/Users/justin/Projects/software-engineering/workflow/src/main/resources/templates/create.html) - create/edit task form
 
-- [WorkflowApplication.java](/Users/justin/Projects/software-engineering/workflow/src/main/java/com/example/workflow/WorkflowApplication.java) - Spring Boot entry point
-- [SecurityConfig.java](/Users/justin/Projects/software-engineering/workflow/src/main/java/com/example/workflow/SecurityConfig.java) - login and authorization rules
-- [WorkflowController.java](/Users/justin/Projects/software-engineering/workflow/src/main/java/com/example/workflow/WorkflowController.java) - web routes and page handling
-- [WorkflowService.java](/Users/justin/Projects/software-engineering/workflow/src/main/java/com/example/workflow/WorkflowService.java) - business logic and permissions
-- [WorkflowItem.java](/Users/justin/Projects/software-engineering/workflow/src/main/java/com/example/workflow/WorkflowItem.java) - task entity
-- [AppUser.java](/Users/justin/Projects/software-engineering/workflow/src/main/java/com/example/workflow/AppUser.java) - user entity
-- [WorkflowRepository.java](/Users/justin/Projects/software-engineering/workflow/src/main/java/com/example/workflow/WorkflowRepository.java) - task persistence
-- [AppUserRepository.java](/Users/justin/Projects/software-engineering/workflow/src/main/java/com/example/workflow/AppUserRepository.java) - user persistence
-- [DataInitializer.java](/Users/justin/Projects/software-engineering/workflow/src/main/java/com/example/workflow/DataInitializer.java) - seeded demo users and starter tasks
-- [dashboard.html](/Users/justin/Projects/software-engineering/workflow/src/main/resources/templates/dashboard.html) - dashboard UI
-- [create.html](/Users/justin/Projects/software-engineering/workflow/src/main/resources/templates/create.html) - create/edit task UI
+## Notes
 
-## Current Limitations
-
-The system is functional, but still simplified:
-
-- no notifications
-- no comments
-- no drag-and-drop Kanban board
-- no advanced role hierarchy
-- no file attachments
-- no email integration
-
-## Notes For The Team
-
-- If you change the database model significantly, you may need to reset the local H2 database files.
-- The seeded users are created automatically when the app starts.
-- The application is meant for class demonstration and sprint deliverables, not production use.
+- The local H2 database is created automatically when the app starts.
+- If demo data needs a full reset, stop the app and remove local H2 database files before restarting.
+- This is a class project system, not a production deployment.

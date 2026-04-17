@@ -1,130 +1,198 @@
 # Sprint 3 Report
 
-## Project
+## 1. Sprint Plan
 
-**Project Name:** Workflow Management System  
-**Sprint:** Sprint 3
+### Sprint Goal
 
-## Introduction
+The goal of Sprint 3 was to move the project from a basic workflow prototype into a more integrated task management system. This sprint focused on implementing multiple high-priority user stories, refining component responsibilities, correcting the architecture description from Sprint 2, and preparing the system for final presentation.
 
-Sprint 3 focused on turning the workflow project into a more complete task workflow application. Earlier versions of the project supported only basic task creation, assignment, and status updates. In this sprint, the system was extended so that it behaves more like a simplified project workflow tool. The sprint also continued to align the documentation with the instructor's architecture feedback from Sprint 2.
+### Selected User Stories / Tasks
 
-## Architectural Position
+- As a manager, I can log in and view all active workflow items.
+- As a manager, I can create and assign workflow items to employees.
+- As a manager, I can edit and archive workflow items.
+- As an employee, I can log in and see only the tasks assigned to me.
+- As an employee, I can update the status of my assigned tasks.
+- As a user, I can return to the system and still see saved workflow data.
 
-The system uses a **client-server architectural style**. The client side provides the user interface through HTML pages, while the server side handles business logic, workflow rules, and persistent storage.
+### Why These Stories Were Selected
 
-Inside the server application, the implementation uses the **Model-View-Controller (MVC)** pattern. MVC is used to organize the code internally and is not the same thing as the overall system architecture.
+These stories were selected because they complete the core workflow cycle of creating, assigning, tracking, and updating work items while also supporting multiple users and permissions. They were the highest-value features needed to turn the project into a coherent, runnable system instead of a simple prototype.
 
-The major components of the system are:
+## 2. Updated Architecture and Design Notes
 
-- UI Component
-- Workflow Service
-- Workflow Repository
-- Workflow Item
-- Workflow Status
+### Updated System Overview
 
-These component names are consistent with the current codebase and with the design terminology requested in Sprint 2 feedback.
+The system uses a **client-server architectural style**. The client side is the user interface, delivered through server-rendered web pages. The server side handles authentication, business logic, workflow rules, and persistent data storage.
 
-## Sprint 3 Goals
+Inside the server application, the project uses the **Model-View-Controller (MVC)** pattern to organize code. This corrects the misunderstanding from Sprint 2: MVC is an internal design pattern, not the top-level system architecture.
 
-The main goals for Sprint 3 were:
+### Refined Components and Responsibilities
 
-1. Improve the workflow application beyond a basic prototype.
-2. Add richer task data so the system feels more like a project management tool.
-3. Support more realistic task management actions such as editing, filtering, and archiving.
-4. Keep persistent storage and testing in place.
-5. Prepare the project for a strong final presentation phase.
+The major components for the current system are:
 
-## Work Completed
+- **UI Component**  
+  Presents the login page, manager dashboard, employee dashboard, and task create/edit forms.
 
-### 1. Richer Task Model
+- **Authentication Component**  
+  Handles login, logout, session management, and role-based access using Spring Security.
 
-The workflow item model was expanded so that tasks now include additional fields beyond title, description, assignee, and status. Each task can now also store:
+- **Workflow Service**  
+  Applies business rules for creating tasks, assigning work, updating status, archiving tasks, and enforcing manager/employee permissions.
 
-- project name
-- priority
-- task type
-- creator
-- due date
-- created timestamp
-- archive state
+- **Workflow Repository**  
+  Stores and retrieves workflow items using Spring Data JPA and H2.
 
-This makes the application closer to a lightweight Jira-style workflow tracker.
+- **User Repository**  
+  Stores and retrieves authenticated users.
 
-### 2. Persistent Storage Maintained
+- **Workflow Item**  
+  Represents a task in the system with title, description, project, priority, type, assignee, creator, due date, archive state, and workflow status.
 
-The repository continues to save workflow data to a local JSON file. Sprint 3 preserved this persistence while extending the stored data model to support the new task fields.
+- **Workflow Status**  
+  Represents the lifecycle state of a workflow item.
 
-### 3. Task Editing and Archiving
+- **User**  
+  Represents an authenticated actor in the system with a username, password, display name, and role.
 
-The application now supports editing existing workflow items. Users can update important task details without recreating the item from scratch. The system also supports archiving tasks so completed or removed work items do not remain in the active dashboard view.
+### Component Interactions
 
-### 4. Project-Based Dashboard and Filtering
+The integrated workflow is:
 
-The dashboard was improved so tasks can be viewed in a more organized way. Tasks are now grouped by workflow status, and the user can filter tasks by:
+1. A manager or employee interacts with the **UI Component**.
+2. The UI sends requests to the controller layer in the Spring Boot application.
+3. The **Authentication Component** verifies identity and role access.
+4. The **Workflow Service** applies workflow rules and permissions.
+5. The **Workflow Repository** and **User Repository** retrieve and store data in the database.
+6. Updated data is returned to the UI and displayed to the user.
 
-- assignee
-- project
-- priority
+### Changes from Sprint 2 and Justification
 
-This makes the application significantly easier to demonstrate and more useful for project tracking.
+The most important design changes from Sprint 2 were:
 
-### 5. Workflow Rules and Validation
+- The architecture description was corrected from mixing MVC with overall system architecture.
+- Browser, view layer, controller, and filenames were removed as top-level architectural components.
+- Authentication and user roles were added as actual system-level functionality.
+- The system moved from an earlier lightweight persistence approach to a database-backed model using H2 and JPA.
+- Component names were made consistent between the design description and implementation.
 
-The workflow still enforces a controlled status progression:
+These changes were necessary because the Sprint 2 feedback showed that the earlier design discussion was using the wrong level of abstraction.
 
-`SUBMITTED -> IN_REVIEW -> APPROVED -> COMPLETED`
+### Component-Level Design Improvements
 
-The system validates required fields during task creation and editing, rejects invalid status transitions, and prevents updates to missing tasks.
+Sprint 3 improved the design at the component level by:
 
-### 6. Expanded Automated Testing
+- adding `AppUser` and role support
+- connecting workflow items to actual user records
+- splitting manager and employee behavior in the service layer
+- enforcing workflow status transitions
+- moving task storage to the database
+- adding seeded demo users and demo tasks for integrated testing and demonstration
 
-The test suite was expanded to cover the new behavior introduced in Sprint 3. The tests now verify:
+## 3. Integrated Runnable System
 
-- workflow item creation with richer fields
-- valid workflow status progression
-- invalid status transition handling
-- repository persistence across reloads
-- task editing
+The current system is a working integrated application. It now includes:
+
+- authenticated login
+- manager and employee roles
+- manager workflows for creating, editing, assigning, and archiving tasks
+- employee workflows for viewing assigned tasks and updating status
+- persistent storage using H2
+- project-based organization and richer task metadata
+- a runnable UI built with Thymeleaf
+
+This means the system now demonstrates multiple integrated components and multiple user workflows, which directly satisfies the Sprint 3 implementation requirement.
+
+## 4. Testing Evidence
+
+Testing was verified with:
+
+```bash
+./mvnw test
+```
+
+The test suite covers:
+
+- application startup
+- task creation
+- role-based task visibility
+- role-based task permissions
+- valid status progression
+- restricted status behavior for employees
 - archiving behavior
-- filtering by project and priority
 
-This provides stronger evidence that the system works correctly.
+This provides both unit/service-level evidence and application-level evidence that the integrated system is functioning.
 
-## Current System Behavior
+## 5. Sprint Report
 
-At the end of Sprint 3, the system supports:
+### What Was Completed
 
-- creating workflow items
-- editing workflow items
-- assigning tasks to users
-- organizing tasks by project
-- tracking task type and priority
-- filtering tasks on the dashboard
-- updating workflow status in valid order
-- archiving tasks
-- saving workflow data between application restarts
+Sprint 3 completed the major system integration work:
 
-## Remaining Limitations
+- authentication with Spring Security
+- manager and employee roles
+- persistent storage with H2 and Spring Data JPA
+- manager workflows for create, edit, assign, and archive
+- employee workflows for assigned-task visibility and status updates
+- richer task model with project, priority, task type, assignee, creator, and due date
+- UI improvements for login, dashboard, and task forms
+- expanded automated testing
 
-Even with the Sprint 3 improvements, the project still has some limitations:
+### Challenges Encountered
 
-- there is no full login or authentication system
-- persistence is file-based rather than database-backed
-- the UI is functional but still simple
-- the system does not yet include comments, notifications, or role-based permissions
-- there is no Kanban drag-and-drop interface
+The main challenges were integration-related:
 
-These limitations are acceptable for the current stage, but they define the difference between this project and a full production project management platform.
+- correcting the architectural misunderstanding from Sprint 2
+- migrating from prototype-style persistence to database-backed storage
+- integrating authentication and authorization into the existing task workflow
+- handling seeded demo users and task data consistently
+- resolving login/logout and custom login page behavior
 
-## Verification
+### What Was Deferred or Changed
 
-The project was verified with:
+The following items were not implemented in Sprint 3:
 
-`./mvnw test`
+- notifications
+- drag-and-drop Kanban behavior
+- comments/history
+- advanced role hierarchy
+- attachments
 
-All tests passed successfully.
+These features were deferred because the priority for Sprint 3 was delivering a stable integrated core system.
+
+### Reflection on Sprint Effectiveness
+
+Sprint 3 was effective because it delivered the most important transition in the project: moving from a basic task prototype to a much more complete workflow management system. It also corrected the architectural issues identified in Sprint 2 and produced a system that is much easier to explain, test, and demonstrate.
+
+## 6. Updated Product Backlog
+
+### Completed
+
+- login/logout
+- manager role
+- employee role
+- role-based permissions
+- database-backed persistence
+- task creation
+- task editing
+- task assignment
+- task archiving
+- employee task visibility
+- status updates
+- project, priority, type, and due date fields
+- seeded demo accounts and tasks
+- improved UI
+- expanded testing
+
+### Remaining / Lower Priority
+
+- drag-and-drop Kanban board
+- comments or history tracking
+- notifications
+- deeper controller/integration tests
+- final report polish
+- final demo preparation and screenshots
 
 ## Conclusion
 
-Sprint 3 successfully moved the project from a basic workflow prototype to a more capable task workflow system. The system now supports richer task information, project-based organization, editing, archiving, filtering, and stronger automated testing. As a result, the project is in a much better position for the final presentation phase and can now be presented as a simplified workflow management tool rather than only a status-tracking demo.
+Sprint 3 corrected the architectural weaknesses from Sprint 2 and delivered a much stronger integrated system. The project now demonstrates authentication, role-based access, database persistence, multiple user workflows, and a clearer component-based design. As a result, the system is in a much better position for final presentation and final project completion.
