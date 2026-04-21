@@ -29,7 +29,7 @@ public class WorkflowService {
         item.setCreatedBy(createdBy);
         item.setCreatedAt(LocalDateTime.now());
         item.setArchived(false);
-        item.setStatus(Status.SUBMITTED);
+        item.setStatus(Status.BACKLOG);
         return workflowRepository.save(item);
     }
 
@@ -80,9 +80,9 @@ public class WorkflowService {
         WorkflowItem item = getItem(id, actingUsername);
 
         if (actor.getRole() == Role.EMPLOYEE
-                && newStatus != Status.IN_REVIEW
-                && newStatus != Status.COMPLETED) {
-            throw new IllegalStateException("Employees can only move tasks to IN_REVIEW or COMPLETED.");
+                && newStatus != Status.IN_PROGRESS
+                && newStatus != Status.IN_REVIEW) {
+            throw new IllegalStateException("Employees can only move tasks to IN_PROGRESS or IN_REVIEW.");
         }
 
         if (!isValidTransition(item.getStatus(), newStatus)) {
@@ -156,10 +156,10 @@ public class WorkflowService {
         }
 
         return switch (currentStatus) {
-            case SUBMITTED -> newStatus == Status.IN_REVIEW;
-            case IN_REVIEW -> newStatus == Status.APPROVED;
-            case APPROVED -> newStatus == Status.COMPLETED;
-            case COMPLETED -> false;
+            case BACKLOG -> newStatus == Status.IN_PROGRESS;
+            case IN_PROGRESS -> newStatus == Status.IN_REVIEW;
+            case IN_REVIEW -> newStatus == Status.IN_PROGRESS || newStatus == Status.ACCEPTED;
+            case ACCEPTED -> false;
         };
     }
 }

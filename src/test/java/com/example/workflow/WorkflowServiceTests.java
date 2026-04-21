@@ -41,7 +41,7 @@ class WorkflowServiceTests {
         assertEquals("Workflow", item.getProject());
         assertEquals("justin", item.getAssignee().getUsername());
         assertEquals("manager", item.getCreatedBy().getUsername());
-        assertEquals(Status.SUBMITTED, item.getStatus());
+        assertEquals(Status.BACKLOG, item.getStatus());
     }
 
     @Test
@@ -81,25 +81,41 @@ class WorkflowServiceTests {
     }
 
     @Test
-    void employeeCanProgressOwnTaskThroughAllowedStatuses() {
+    void employeeCanProgressOwnTaskIntoReviewAndManagerCanAcceptIt() {
         WorkflowItem item = service.createItem("Task", "Desc", "justin", "Workflow",
                 Priority.MEDIUM, TaskType.TASK, "manager", null);
 
+        service.updateStatus(item.getId(), Status.IN_PROGRESS, "justin");
         service.updateStatus(item.getId(), Status.IN_REVIEW, "justin");
-        service.updateStatus(item.getId(), Status.APPROVED, "manager");
-        service.updateStatus(item.getId(), Status.COMPLETED, "justin");
+        service.updateStatus(item.getId(), Status.ACCEPTED, "manager");
 
         WorkflowItem updated = service.getItem(item.getId(), "manager");
-        assertEquals(Status.COMPLETED, updated.getStatus());
+        assertEquals(Status.ACCEPTED, updated.getStatus());
     }
 
     @Test
-    void employeeCannotApproveTaskDirectly() {
+    void managerCanReturnReviewedTaskToInProgress() {
         WorkflowItem item = service.createItem("Task", "Desc", "justin", "Workflow",
                 Priority.MEDIUM, TaskType.TASK, "manager", null);
 
+        service.updateStatus(item.getId(), Status.IN_PROGRESS, "justin");
+        service.updateStatus(item.getId(), Status.IN_REVIEW, "justin");
+        service.updateStatus(item.getId(), Status.IN_PROGRESS, "manager");
+
+        WorkflowItem updated = service.getItem(item.getId(), "manager");
+        assertEquals(Status.IN_PROGRESS, updated.getStatus());
+    }
+
+    @Test
+    void employeeCannotAcceptTaskDirectly() {
+        WorkflowItem item = service.createItem("Task", "Desc", "justin", "Workflow",
+                Priority.MEDIUM, TaskType.TASK, "manager", null);
+
+        service.updateStatus(item.getId(), Status.IN_PROGRESS, "justin");
+        service.updateStatus(item.getId(), Status.IN_REVIEW, "justin");
+
         assertThrows(IllegalStateException.class,
-                () -> service.updateStatus(item.getId(), Status.APPROVED, "justin"));
+                () -> service.updateStatus(item.getId(), Status.ACCEPTED, "justin"));
     }
 
     @Test
@@ -121,7 +137,7 @@ class WorkflowServiceTests {
     }
 
     @Test
-    void archivedTaskAppearsInArchivedList(){
+    void archivedTaskAppearsInArchivedList() {
         WorkflowItem item = service.createItem("Employee Task",
             "Justin's work",
             "justin",
@@ -130,11 +146,10 @@ class WorkflowServiceTests {
             TaskType.TASK,
             "manager",
             null);
-        
+
         service.archiveItem(item.getId(), "manager");
         var archivedItems = service.getArchivedItems();
 
         assertTrue(archivedItems.stream().anyMatch(archivedItem -> archivedItem.getId().equals(item.getId())));
-
     }
 }

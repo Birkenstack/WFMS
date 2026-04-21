@@ -1,8 +1,8 @@
 package com.example.workflow;
 
 public enum Status {
-    SUBMITTED,
+    BACKLOG,
+    IN_PROGRESS,
     IN_REVIEW,
-    APPROVED,
-    COMPLETED
+    ACCEPTED
 }

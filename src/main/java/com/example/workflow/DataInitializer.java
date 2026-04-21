@@ -45,7 +45,7 @@ public class DataInitializer implements CommandLineRunner {
                 "Platform",
                 Priority.MEDIUM,
                 TaskType.BUG,
-                Status.SUBMITTED,
+                Status.BACKLOG,
                 manager,
                 employeeTwo,
                 LocalDate.now().plusDays(5));
@@ -55,7 +55,7 @@ public class DataInitializer implements CommandLineRunner {
                 "Platform",
                 Priority.LOW,
                 TaskType.TASK,
-                Status.SUBMITTED,
+                Status.BACKLOG,
                 manager,
                 employeeThree,
                 LocalDate.now().plusDays(7));
@@ -65,7 +65,7 @@ public class DataInitializer implements CommandLineRunner {
                 "Presentation",
                 Priority.HIGH,
                 TaskType.STORY,
-                Status.APPROVED,
+                Status.ACCEPTED,
                 manager,
                 employeeOne,
                 LocalDate.now().plusDays(2));
@@ -75,7 +75,7 @@ public class DataInitializer implements CommandLineRunner {
                 "Security",
                 Priority.HIGH,
                 TaskType.BUG,
-                Status.IN_REVIEW,
+                Status.IN_PROGRESS,
                 manager,
                 employeeTwo,
                 LocalDate.now().plusDays(4));
@@ -85,7 +85,7 @@ public class DataInitializer implements CommandLineRunner {
                 "Presentation",
                 Priority.MEDIUM,
                 TaskType.TASK,
-                Status.SUBMITTED,
+                Status.BACKLOG,
                 manager,
                 employeeThree,
                 LocalDate.now().plusDays(6));
