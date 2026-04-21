@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Workflow Dashboard</title>
   <link rel="stylesheet" href="/app.css" />
+  <script defer src="/dashboard.js"></script>
 </head>
 <body>
   <main class="shell">
@@ -12,7 +13,7 @@
       <div class="hero-top">
         <div>
           <h1>Workflow Control Board</h1>
-          <p class="subtle">Track assignments, approvals, and presentation-ready progress across the team.</p>
+          <p class="subtle">Review the delivery board at a glance, then open tasks only when you need the full story.</p>
         </div>
         <div class="meta-row">
           <span class="badge" th:text="${currentUser.displayName}"></span>
@@ -61,53 +62,145 @@
 
     <p th:if="${#lists.isEmpty(items)}" class="subtle">No tasks matched the current filters.</p>
 
-    <section class="board">
-      <article class="board-column" th:each="statusEntry : ${itemsByStatus}">
-        <h2 th:text="${statusEntry.key}"></h2>
-        <p class="column-count" th:text="${#lists.size(statusEntry.value) + ' item(s)'}"></p>
-        <p th:if="${#lists.isEmpty(statusEntry.value)}" class="subtle">No items in this status.</p>
+    <section class="board-shell" th:if="${!#lists.isEmpty(items)}">
+      <div class="board-caption">
+        <p class="subtle">Drag cards between columns to advance workflow status. Click a card or the Open button to inspect the full task inside a modal.</p>
+      </div>
 
-        <div th:if="${!#lists.isEmpty(statusEntry.value)}" class="task-list">
-          <section class="task-card" th:each="item : ${statusEntry.value}">
-            <div class="task-tags">
-              <span th:text="${item.project}"></span>
-              <span th:text="${item.priority}"></span>
-            </div>
+      <section class="board">
+        <article class="board-column" th:each="statusEntry : ${itemsByStatus}" th:attr="data-drop-status=${statusEntry.key}">
+          <h2 th:text="${statusEntry.key}"></h2>
+          <p class="column-count" th:text="${#lists.size(statusEntry.value) + ' item(s)'}"></p>
+          <p th:if="${#lists.isEmpty(statusEntry.value)}" class="subtle">No items in this status.</p>
 
-            <h3>
-              <a class="task-link" th:href="@{/items/{id}(id=${item.id})}" th:text="${item.title}"></a>
-            </h3>
+          <div th:if="${!#lists.isEmpty(statusEntry.value)}" class="task-list">
+            <section class="task-card"
+                     th:each="item : ${statusEntry.value}"
+                     draggable="true"
+                     tabindex="0"
+                     th:attr="data-item-id=${item.id},
+                              data-title=${item.title},
+                              data-description=${item.description},
+                              data-project=${item.project},
+                              data-priority=${item.priority},
+                              data-status=${item.status},
+                              data-task-type=${item.taskType},
+                              data-assignee=${item.assignee.displayName},
+                              data-created-by=${item.createdBy.displayName},
+                              data-due-date=${item.dueDate != null ? #temporals.format(item.dueDate, 'MMM d, yyyy') : 'No due date'},
+                              data-created-at=${item.createdAt != null ? #temporals.format(item.createdAt, 'MMM d, yyyy h:mm a') : 'Unknown'},
+                              data-edit-url=${isManager ? '/items/' + item.id + '/edit' : ''},
+                              data-detail-url=${'/items/' + item.id},
+                              data-archive-url=${isManager ? '/items/' + item.id + '/archive' : ''},
+                              data-can-edit=${isManager},
+                              data-can-archive=${isManager}">
+              <div class="task-card-top">
+                <div class="task-tags">
+                  <span th:text="${item.project}"></span>
+                  <span th:text="${item.priority}"></span>
+                </div>
+                <span class="task-handle" aria-hidden="true">::</span>
+              </div>
 
-            <div class="task-tags">
-              <span th:if="${item.dueDate != null}" th:text="${'Due: ' + item.dueDate}"></span>
-            </div>
+              <h3 th:text="${item.title}"></h3>
+              <p class="task-summary" th:text="${item.description}"></p>
 
-            <div class="task-actions">
-              <a class="button-link secondary" th:href="@{/items/{id}(id=${item.id})}">View Details</a>
+              <div class="task-meta">
+                <span th:text="${item.taskType}"></span>
+                <span th:text="${'Owner: ' + item.assignee.displayName}"></span>
+                <span th:if="${item.dueDate != null}" th:text="${'Due ' + #temporals.format(item.dueDate, 'MMM d')}"></span>
+              </div>
 
-              <form action="/updateStatus" method="post">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                <input type="hidden" name="id" th:value="${item.id}" />
-                <select name="status">
-                  <option th:each="availableStatus : ${statuses}"
-                          th:value="${availableStatus}"
-                          th:text="${availableStatus}"
-                          th:selected="${availableStatus == item.status}"></option>
-                </select>
-                <button type="submit">Update</button>
-              </form>
-
-              <a th:if="${isManager}" class="button-link secondary" th:href="@{/items/{id}/edit(id=${item.id})}">Edit</a>
-
-              <form th:if="${isManager}" th:action="@{/items/{id}/archive(id=${item.id})}" method="post">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                <button type="submit" class="danger">Archive</button>
-              </form>
-            </div>
-          </section>
-        </div>
-      </article>
+              <div class="task-actions">
+                <button type="button" class="secondary open-task-modal">Open</button>
+                <a class="text-link" th:href="@{/items/{id}(id=${item.id})}">Full Page</a>
+              </div>
+            </section>
+          </div>
+        </article>
+      </section>
     </section>
+
+    <form id="status-drop-form" action="/updateStatus" method="post" class="hidden-form">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+      <input type="hidden" name="id" id="status-drop-id" />
+      <input type="hidden" name="status" id="status-drop-value" />
+    </form>
+
+    <dialog id="task-modal" class="task-modal">
+      <div class="task-modal-frame">
+        <div class="task-modal-head">
+          <p class="eyebrow">Task details</p>
+          <button type="button" class="modal-close" aria-label="Close task details">Close</button>
+        </div>
+
+        <div class="task-modal-content">
+          <div class="detail-header">
+            <div class="task-tags modal-tags">
+              <span id="modal-project"></span>
+              <span id="modal-type"></span>
+              <span id="modal-priority"></span>
+              <span id="modal-status"></span>
+            </div>
+            <p class="detail-id" id="modal-id"></p>
+          </div>
+
+          <h2 class="detail-title" id="modal-title"></h2>
+          <p class="detail-description" id="modal-description"></p>
+
+          <div class="detail-grid">
+            <section class="detail-card">
+              <h3>Ownership</h3>
+              <dl class="detail-list">
+                <div>
+                  <dt>Assignee</dt>
+                  <dd id="modal-assignee"></dd>
+                </div>
+                <div>
+                  <dt>Created By</dt>
+                  <dd id="modal-created-by"></dd>
+                </div>
+              </dl>
+            </section>
+
+            <section class="detail-card">
+              <h3>Schedule</h3>
+              <dl class="detail-list">
+                <div>
+                  <dt>Due Date</dt>
+                  <dd id="modal-due-date"></dd>
+                </div>
+                <div>
+                  <dt>Created</dt>
+                  <dd id="modal-created-at"></dd>
+                </div>
+              </dl>
+            </section>
+          </div>
+
+          <div class="modal-actions">
+            <a id="modal-detail-link" class="button-link secondary" href="#">Full Page</a>
+            <a id="modal-edit-link" class="button-link" href="#">Edit Task</a>
+
+            <form id="modal-status-form" action="/updateStatus" method="post" class="modal-inline-form">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+              <input type="hidden" name="id" id="modal-status-id" />
+              <select name="status" id="modal-status-select">
+                <option th:each="availableStatus : ${statuses}"
+                        th:value="${availableStatus}"
+                        th:text="${availableStatus}"></option>
+              </select>
+              <button type="submit">Update Status</button>
+            </form>
+
+            <form id="modal-archive-form" action="#" method="post" class="modal-inline-form">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+              <button type="submit" class="danger">Archive</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </dialog>
   </main>
 </body>
 </html>
