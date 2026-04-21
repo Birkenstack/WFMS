@@ -38,26 +38,31 @@ public class WorkflowController {
                             Model model) {
         String username = authentication.getName();
         AppUser currentUser = service.getUser(username);
+        boolean isManager = currentUser.getRole() == Role.MANAGER;
         List<WorkflowItem> items = service.filterItems(username, project, status, priority);
-        Map<Status, List<WorkflowItem>> itemsByStatus = new LinkedHashMap<>();
-        for (Status workflowStatus : Status.values()) {
-            itemsByStatus.put(workflowStatus, items.stream()
-                    .filter(item -> item.getStatus() == workflowStatus)
-                    .toList());
-        }
+        List<BoardColumn> boardColumns = buildBoardColumns(items, isManager);
 
         model.addAttribute("items", items);
-        model.addAttribute("itemsByStatus", itemsByStatus);
+        model.addAttribute("boardColumns", boardColumns);
         model.addAttribute("currentUser", currentUser);
-        model.addAttribute("isManager", currentUser.getRole() == Role.MANAGER);
+        model.addAttribute("isManager", isManager);
         model.addAttribute("projectFilter", project);
         model.addAttribute("selectedStatus", status);
         model.addAttribute("selectedPriority", priority);
-        model.addAttribute("statuses", Status.values());
+        model.addAttribute("availableStatuses", isManager
+                ? Arrays.asList(Status.values())
+                : Arrays.asList(Status.IN_PROGRESS, Status.IN_REVIEW));
         model.addAttribute("priorities", Priority.values());
         model.addAttribute("projects", service.getProjects(username));
         model.addAttribute("message", message);
         model.addAttribute("error", error);
+        model.addAttribute("dashboardTitle", isManager ? "Manager Delivery Board" : "My Delivery Board");
+        model.addAttribute("dashboardSubtitle", isManager
+                ? "See the whole team workflow, review submitted work, and move accepted items toward closure."
+                : "Focus on your assigned backlog, what you are actively building, and what is waiting for review.");
+        model.addAttribute("boardHint", isManager
+                ? "Use this board to review backlog, monitor active work, accept completed work, or send items back for rework."
+                : "Use this board to pull your assigned work forward, submit it for review, and track what has already been accepted.");
         return "dashboard";
     }
 
@@ -211,5 +216,30 @@ public class WorkflowController {
             item.setAssignee(service.getUser(assigneeUsername));
         }
         return item;
+    }
+
+    private List<BoardColumn> buildBoardColumns(List<WorkflowItem> items, boolean isManager) {
+        Map<Status, String> labels = new LinkedHashMap<>();
+        if (isManager) {
+            labels.put(Status.BACKLOG, "Product Backlog");
+            labels.put(Status.IN_PROGRESS, "In Progress");
+            labels.put(Status.IN_REVIEW, "Review Queue");
+            labels.put(Status.ACCEPTED, "Accepted");
+        } else {
+            labels.put(Status.BACKLOG, "Assigned Backlog");
+            labels.put(Status.IN_PROGRESS, "In Progress");
+            labels.put(Status.IN_REVIEW, "In Review");
+            labels.put(Status.ACCEPTED, "Accepted");
+        }
+
+        return labels.entrySet().stream()
+                .map(entry -> new BoardColumn(
+                        entry.getKey(),
+                        entry.getValue(),
+                        items.stream().filter(item -> item.getStatus() == entry.getKey()).toList()))
+                .toList();
+    }
+
+    private record BoardColumn(Status status, String label, List<WorkflowItem> items) {
     }
 }
