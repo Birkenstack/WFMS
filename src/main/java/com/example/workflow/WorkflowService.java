@@ -50,15 +50,24 @@ public class WorkflowService {
         if (user.getRole() == Role.MANAGER) {
             return workflowRepository.findByArchivedFalseOrderByCreatedAtDesc();
         }
+        return workflowRepository.findByArchivedFalseAndAssigneeUsernameIgnoreCaseOrderByCreatedAtDesc(user.getUsername());
+    }
+
+    public List<WorkflowItem> getClaimableBacklogItems(String username) {
+        AppUser user = getUser(username);
+        if (user.getRole() == Role.MANAGER) {
+            return List.of();
+        }
         return workflowRepository.findByArchivedFalseOrderByCreatedAtDesc().stream()
-                .filter(item -> item.getStatus() == Status.BACKLOG
-                        || item.getAssignee().getUsername().equalsIgnoreCase(user.getUsername()))
+                .filter(item -> item.getStatus() == Status.BACKLOG)
+                .filter(item -> !item.getAssignee().getUsername().equalsIgnoreCase(user.getUsername()))
                 .toList();
     }
 
-    public List<WorkflowItem> filterItems(String username, String project, Status status, Priority priority) {
+    public List<WorkflowItem> filterItems(String username, boolean includeTeamBacklog, String project, Status status, Priority priority) {
         String trimmedProject = project == null ? "" : project.trim();
-        return getVisibleItems(username).stream()
+        List<WorkflowItem> source = includeTeamBacklog ? getClaimableBacklogItems(username) : getVisibleItems(username);
+        return source.stream()
                 .filter(item -> trimmedProject.isEmpty() || trimmedProject.equalsIgnoreCase(item.getProject()))
                 .filter(item -> status == null || item.getStatus() == status)
                 .filter(item -> priority == null || item.getPriority() == priority)
@@ -128,8 +137,9 @@ public class WorkflowService {
         workflowRepository.save(item);
     }
 
-    public List<String> getProjects(String username) {
-        return getVisibleItems(username).stream()
+    public List<String> getProjects(String username, boolean includeTeamBacklog) {
+        List<WorkflowItem> source = includeTeamBacklog ? getClaimableBacklogItems(username) : getVisibleItems(username);
+        return source.stream()
                 .map(WorkflowItem::getProject)
                 .filter(project -> project != null && !project.isBlank())
                 .distinct()

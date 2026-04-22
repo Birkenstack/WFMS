@@ -61,18 +61,34 @@ class WorkflowServiceTests {
     }
 
     @Test
-    void employeeSeesOwnWorkAndTeamBacklog() {
+    void employeeDefaultViewShowsOnlyAssignedWork() {
         WorkflowItem justinTask = service.createItem("Assigned to Justin", "Desc", "justin", "Workflow",
                 Priority.MEDIUM, TaskType.TASK, "manager", null);
         WorkflowItem johnnyTask = service.createItem("Assigned to Johnny", "Desc", "johnny", "Workflow",
                 Priority.MEDIUM, TaskType.TASK, "manager", null);
 
-        service.updateStatus(johnnyTask.getId(), Status.IN_PROGRESS, "johnny");
-
         var visible = service.getVisibleItems("justin");
 
         assertTrue(visible.stream().anyMatch(item -> item.getId().equals(justinTask.getId())));
         assertTrue(visible.stream().noneMatch(item -> item.getId().equals(johnnyTask.getId())));
+    }
+
+    @Test
+    void employeeCanViewClaimableTeamBacklogSeparately() {
+        WorkflowItem justinTask = service.createItem("Assigned to Justin", "Desc", "justin", "Workflow",
+                Priority.MEDIUM, TaskType.TASK, "manager", null);
+        WorkflowItem johnnyTask = service.createItem("Assigned to Johnny", "Desc", "johnny", "Workflow",
+                Priority.MEDIUM, TaskType.TASK, "manager", null);
+        WorkflowItem johnnyInProgress = service.createItem("Johnny in progress", "Desc", "johnny", "Workflow",
+                Priority.MEDIUM, TaskType.TASK, "manager", null);
+
+        service.updateStatus(johnnyInProgress.getId(), Status.IN_PROGRESS, "johnny");
+
+        var backlog = service.getClaimableBacklogItems("justin");
+
+        assertTrue(backlog.stream().anyMatch(item -> item.getId().equals(johnnyTask.getId())));
+        assertTrue(backlog.stream().noneMatch(item -> item.getId().equals(justinTask.getId())));
+        assertTrue(backlog.stream().noneMatch(item -> item.getId().equals(johnnyInProgress.getId())));
     }
 
     @Test

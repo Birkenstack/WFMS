@@ -32,6 +32,7 @@ public class WorkflowController {
     public String dashboard(@RequestParam(defaultValue = "") String project,
                             @RequestParam(required = false) Status status,
                             @RequestParam(required = false) Priority priority,
+                            @RequestParam(defaultValue = "assigned") String view,
                             @RequestParam(required = false) String message,
                             @RequestParam(required = false) String error,
                             Authentication authentication,
@@ -39,13 +40,15 @@ public class WorkflowController {
         String username = authentication.getName();
         AppUser currentUser = service.getUser(username);
         boolean isManager = currentUser.getRole() == Role.MANAGER;
-        List<WorkflowItem> items = service.filterItems(username, project, status, priority);
-        List<BoardColumn> boardColumns = buildBoardColumns(items, isManager);
+        boolean teamBacklogView = !isManager && "team-backlog".equalsIgnoreCase(view);
+        List<WorkflowItem> items = service.filterItems(username, teamBacklogView, project, status, priority);
+        List<BoardColumn> boardColumns = buildBoardColumns(items, isManager, teamBacklogView);
 
         model.addAttribute("items", items);
         model.addAttribute("boardColumns", boardColumns);
         model.addAttribute("currentUser", currentUser);
         model.addAttribute("isManager", isManager);
+        model.addAttribute("teamBacklogView", teamBacklogView);
         model.addAttribute("projectFilter", project);
         model.addAttribute("selectedStatus", status);
         model.addAttribute("selectedPriority", priority);
@@ -53,16 +56,12 @@ public class WorkflowController {
                 ? Arrays.asList(Status.values())
                 : Arrays.asList(Status.IN_PROGRESS, Status.IN_REVIEW));
         model.addAttribute("priorities", Priority.values());
-        model.addAttribute("projects", service.getProjects(username));
+        model.addAttribute("projects", service.getProjects(username, teamBacklogView));
         model.addAttribute("message", message);
         model.addAttribute("error", error);
-        model.addAttribute("dashboardTitle", isManager ? "Manager Delivery Board" : "My Delivery Board");
-        model.addAttribute("dashboardSubtitle", isManager
-                ? "See the whole team workflow, review submitted work, and move accepted items toward closure."
-                : "Focus on your work, pick up backlog items when you are ahead, and move completed tasks into review.");
-        model.addAttribute("boardHint", isManager
-                ? "Use this board to review backlog, monitor active work, accept completed work, or send items back for rework."
-                : "Backlog shows claimable work across the team. Claim a backlog item to assign it to yourself and move it into progress.");
+        model.addAttribute("dashboardTitle", isManager ? "Manager Delivery Board" : (teamBacklogView ? "Team Backlog" : "My Delivery Board"));
+        model.addAttribute("dashboardSubtitle", resolveDashboardSubtitle(isManager, teamBacklogView));
+        model.addAttribute("boardHint", resolveBoardHint(isManager, teamBacklogView));
         return "dashboard";
     }
 
@@ -170,6 +169,7 @@ public class WorkflowController {
         } catch (RuntimeException e) {
             redirectAttributes.addAttribute("error", e.getMessage());
         }
+        redirectAttributes.addAttribute("view", "team-backlog");
         return "redirect:/";
     }
 
@@ -205,7 +205,7 @@ public class WorkflowController {
         model.addAttribute("currentUser", currentUser);
         model.addAttribute("item", item);
         model.addAttribute("assignees", service.getAssignableUsers());
-        model.addAttribute("projects", service.getProjects(currentUser.getUsername()));
+        model.addAttribute("projects", service.getProjects(currentUser.getUsername(), false));
         model.addAttribute("priorities", Arrays.asList(Priority.values()));
         model.addAttribute("taskTypes", Arrays.asList(TaskType.values()));
         model.addAttribute("editMode", editMode);
@@ -231,15 +231,17 @@ public class WorkflowController {
         return item;
     }
 
-    private List<BoardColumn> buildBoardColumns(List<WorkflowItem> items, boolean isManager) {
+    private List<BoardColumn> buildBoardColumns(List<WorkflowItem> items, boolean isManager, boolean teamBacklogView) {
         Map<Status, String> labels = new LinkedHashMap<>();
         if (isManager) {
             labels.put(Status.BACKLOG, "Product Backlog");
             labels.put(Status.IN_PROGRESS, "In Progress");
             labels.put(Status.IN_REVIEW, "Review Queue");
             labels.put(Status.ACCEPTED, "Accepted");
-        } else {
+        } else if (teamBacklogView) {
             labels.put(Status.BACKLOG, "Team Backlog");
+        } else {
+            labels.put(Status.BACKLOG, "Assigned Backlog");
             labels.put(Status.IN_PROGRESS, "In Progress");
             labels.put(Status.IN_REVIEW, "In Review");
             labels.put(Status.ACCEPTED, "Accepted");
@@ -251,6 +253,26 @@ public class WorkflowController {
                         entry.getValue(),
                         items.stream().filter(item -> item.getStatus() == entry.getKey()).toList()))
                 .toList();
+    }
+
+    private String resolveDashboardSubtitle(boolean isManager, boolean teamBacklogView) {
+        if (isManager) {
+            return "See the whole team workflow, review submitted work, and move accepted items toward closure.";
+        }
+        if (teamBacklogView) {
+            return "Browse the team backlog when you are ahead and claim work that should move into your queue.";
+        }
+        return "Focus on your assigned backlog, the work you are actively building, and what is waiting for review.";
+    }
+
+    private String resolveBoardHint(boolean isManager, boolean teamBacklogView) {
+        if (isManager) {
+            return "Use this board to review backlog, monitor active work, accept completed work, or send items back for rework.";
+        }
+        if (teamBacklogView) {
+            return "This backlog view is separate from your personal board. Claim a task here to assign it to yourself and move it into progress.";
+        }
+        return "This default board only shows your assigned work. Switch to Team Backlog when you want to pick up extra backlog items.";
     }
 
     private record BoardColumn(Status status, String label, List<WorkflowItem> items) {

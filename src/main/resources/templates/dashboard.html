@@ -24,6 +24,7 @@
 
       <div class="toolbar">
         <form action="/" method="get" class="filters">
+          <input th:if="${!isManager and teamBacklogView}" type="hidden" name="view" value="team-backlog" />
           <div class="field">
             <label for="project">Project</label>
             <select id="project" name="project">
@@ -48,6 +49,10 @@
         </form>
 
         <div class="action-row">
+          <div th:if="${!isManager}" class="view-toggle">
+            <a class="button-link secondary" th:classappend="${!teamBacklogView} ? ' active-toggle' : ''" th:href="@{/(project=${projectFilter},priority=${selectedPriority})}">My Work</a>
+            <a class="button-link secondary" th:classappend="${teamBacklogView} ? ' active-toggle' : ''" th:href="@{/(view='team-backlog',project=${projectFilter},priority=${selectedPriority})}">Team Backlog</a>
+          </div>
           <a th:if="${isManager}" class="button-link" th:href="@{/create}">New Task</a>
           <a th:if="${isManager}" class="button-link secondary" th:href="@{/archived}">Archived Tasks</a>
           <form action="/logout" method="post" class="inline-form">
@@ -68,7 +73,7 @@
         <p class="subtle" th:text="${boardHint}"></p>
       </div>
 
-      <section class="board">
+      <section class="board" th:classappend="${!isManager and teamBacklogView} ? ' board-single' : ''">
         <article class="board-column" th:each="column : ${boardColumns}" th:attr="data-drop-status=${column.status}">
           <h2 th:text="${column.label}"></h2>
           <p class="column-count" th:text="${#lists.size(column.items) + ' item(s)'}"></p>
@@ -93,10 +98,10 @@
                               data-edit-url=${isManager ? '/items/' + item.id + '/edit' : ''},
                               data-detail-url=${'/items/' + item.id},
                               data-archive-url=${isManager ? '/items/' + item.id + '/archive' : ''},
-                              data-claim-url=${!isManager && item.status.name() == 'BACKLOG' && item.assignee.username != currentUser.username ? '/items/' + item.id + '/claim' : ''},
+                              data-claim-url=${!isManager && teamBacklogView && item.status.name() == 'BACKLOG' ? '/items/' + item.id + '/claim' : ''},
                               data-can-edit=${isManager},
                               data-can-archive=${isManager},
-                              data-can-claim=${!isManager && item.status.name() == 'BACKLOG' && item.assignee.username != currentUser.username},
+                              data-can-claim=${!isManager && teamBacklogView && item.status.name() == 'BACKLOG'},
                               data-role=${isManager ? 'manager' : 'employee'}">
               <div class="task-card-top">
                 <div class="task-tags">
