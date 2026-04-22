@@ -50,7 +50,10 @@ public class WorkflowService {
         if (user.getRole() == Role.MANAGER) {
             return workflowRepository.findByArchivedFalseOrderByCreatedAtDesc();
         }
-        return workflowRepository.findByArchivedFalseAndAssigneeUsernameIgnoreCaseOrderByCreatedAtDesc(user.getUsername());
+        return workflowRepository.findByArchivedFalseOrderByCreatedAtDesc().stream()
+                .filter(item -> item.getStatus() == Status.BACKLOG
+                        || item.getAssignee().getUsername().equalsIgnoreCase(user.getUsername()))
+                .toList();
     }
 
     public List<WorkflowItem> filterItems(String username, String project, Status status, Priority priority) {
@@ -69,10 +72,32 @@ public class WorkflowService {
         if (item.isArchived()) {
             throw new NoSuchElementException("Workflow item " + id + " was not found.");
         }
-        if (user.getRole() == Role.EMPLOYEE && !item.getAssignee().getUsername().equalsIgnoreCase(user.getUsername())) {
+        if (user.getRole() == Role.EMPLOYEE
+                && item.getStatus() != Status.BACKLOG
+                && !item.getAssignee().getUsername().equalsIgnoreCase(user.getUsername())) {
             throw new IllegalStateException("You do not have access to this workflow item.");
         }
         return item;
+    }
+
+    public WorkflowItem claimItem(Long id, String actingUsername) {
+        AppUser actor = getUser(actingUsername);
+        if (actor.getRole() != Role.EMPLOYEE) {
+            throw new IllegalStateException("Only employees can claim backlog work.");
+        }
+
+        WorkflowItem item = workflowRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Workflow item " + id + " was not found."));
+        if (item.isArchived()) {
+            throw new NoSuchElementException("Workflow item " + id + " was not found.");
+        }
+        if (item.getStatus() != Status.BACKLOG) {
+            throw new IllegalStateException("Only backlog items can be claimed.");
+        }
+
+        item.setAssignee(actor);
+        item.setStatus(Status.IN_PROGRESS);
+        return workflowRepository.save(item);
     }
 
     public void updateStatus(Long id, Status newStatus, String actingUsername) {

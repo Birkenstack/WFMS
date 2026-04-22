@@ -93,8 +93,10 @@
                               data-edit-url=${isManager ? '/items/' + item.id + '/edit' : ''},
                               data-detail-url=${'/items/' + item.id},
                               data-archive-url=${isManager ? '/items/' + item.id + '/archive' : ''},
+                              data-claim-url=${!isManager && item.status.name() == 'BACKLOG' && item.assignee.username != currentUser.username ? '/items/' + item.id + '/claim' : ''},
                               data-can-edit=${isManager},
                               data-can-archive=${isManager},
+                              data-can-claim=${!isManager && item.status.name() == 'BACKLOG' && item.assignee.username != currentUser.username},
                               data-role=${isManager ? 'manager' : 'employee'}">
               <div class="task-card-top">
                 <div class="task-tags">
@@ -183,6 +185,11 @@
           <div class="modal-actions">
             <a id="modal-detail-link" class="button-link secondary" href="#">Full Page</a>
             <a id="modal-edit-link" class="button-link" href="#">Edit Task</a>
+
+            <form id="modal-claim-form" action="#" method="post" class="modal-inline-form">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+              <button type="submit">Claim And Start</button>
+            </form>
 
             <form id="modal-status-form" action="/updateStatus" method="post" class="modal-inline-form">
               <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />

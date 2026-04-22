@@ -25,7 +25,9 @@ document.addEventListener('DOMContentLoaded', () => {
     createdAt: document.getElementById('modal-created-at'),
     detailLink: document.getElementById('modal-detail-link'),
     editLink: document.getElementById('modal-edit-link'),
+    claimForm: document.getElementById('modal-claim-form'),
     statusId: document.getElementById('modal-status-id'),
+    statusForm: document.getElementById('modal-status-form'),
     statusSelect: document.getElementById('modal-status-select'),
     archiveForm: document.getElementById('modal-archive-form')
   };
@@ -53,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const canEdit = data.canEdit === 'true';
     const canArchive = data.canArchive === 'true';
+    const canClaim = data.canClaim === 'true';
 
     if (canEdit) {
       modalFields.editLink.href = data.editUrl;
@@ -61,8 +64,17 @@ document.addEventListener('DOMContentLoaded', () => {
       modalFields.editLink.hidden = true;
     }
 
+    modalFields.claimForm.hidden = !canClaim;
+    modalFields.claimForm.action = data.claimUrl || '#';
+
     modalFields.archiveForm.hidden = !canArchive;
     modalFields.archiveForm.action = data.archiveUrl || '#';
+
+    if (canClaim) {
+      modalFields.statusForm.hidden = true;
+    } else {
+      modalFields.statusForm.hidden = false;
+    }
 
     modal.showModal();
   };

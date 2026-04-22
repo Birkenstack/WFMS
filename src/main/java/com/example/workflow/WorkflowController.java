@@ -59,10 +59,10 @@ public class WorkflowController {
         model.addAttribute("dashboardTitle", isManager ? "Manager Delivery Board" : "My Delivery Board");
         model.addAttribute("dashboardSubtitle", isManager
                 ? "See the whole team workflow, review submitted work, and move accepted items toward closure."
-                : "Focus on your assigned backlog, what you are actively building, and what is waiting for review.");
+                : "Focus on your work, pick up backlog items when you are ahead, and move completed tasks into review.");
         model.addAttribute("boardHint", isManager
                 ? "Use this board to review backlog, monitor active work, accept completed work, or send items back for rework."
-                : "Use this board to pull your assigned work forward, submit it for review, and track what has already been accepted.");
+                : "Backlog shows claimable work across the team. Claim a backlog item to assign it to yourself and move it into progress.");
         return "dashboard";
     }
 
@@ -160,6 +160,19 @@ public class WorkflowController {
         }
     }
 
+    @PostMapping("/items/{id}/claim")
+    public String claimItem(@PathVariable Long id,
+                            RedirectAttributes redirectAttributes,
+                            Authentication authentication) {
+        try {
+            WorkflowItem item = service.claimItem(id, authentication.getName());
+            redirectAttributes.addAttribute("message", "Claimed \"" + item.getTitle() + "\" and moved it to In Progress");
+        } catch (RuntimeException e) {
+            redirectAttributes.addAttribute("error", e.getMessage());
+        }
+        return "redirect:/";
+    }
+
     @PostMapping("/updateStatus")
     public String updateStatus(@RequestParam Long id,
                                @RequestParam Status status,
@@ -226,7 +239,7 @@ public class WorkflowController {
             labels.put(Status.IN_REVIEW, "Review Queue");
             labels.put(Status.ACCEPTED, "Accepted");
         } else {
-            labels.put(Status.BACKLOG, "Assigned Backlog");
+            labels.put(Status.BACKLOG, "Team Backlog");
             labels.put(Status.IN_PROGRESS, "In Progress");
             labels.put(Status.IN_REVIEW, "In Review");
             labels.put(Status.ACCEPTED, "Accepted");

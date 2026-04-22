@@ -61,15 +61,38 @@ class WorkflowServiceTests {
     }
 
     @Test
-    void employeeOnlySeesAssignedTasks() {
-        service.createItem("Assigned to Justin", "Desc", "justin", "Workflow",
+    void employeeSeesOwnWorkAndTeamBacklog() {
+        WorkflowItem justinTask = service.createItem("Assigned to Justin", "Desc", "justin", "Workflow",
                 Priority.MEDIUM, TaskType.TASK, "manager", null);
-        service.createItem("Assigned to Johnny", "Desc", "johnny", "Workflow",
+        WorkflowItem johnnyTask = service.createItem("Assigned to Johnny", "Desc", "johnny", "Workflow",
                 Priority.MEDIUM, TaskType.TASK, "manager", null);
+
+        service.updateStatus(johnnyTask.getId(), Status.IN_PROGRESS, "johnny");
 
         var visible = service.getVisibleItems("justin");
 
-        assertTrue(visible.stream().allMatch(item -> item.getAssignee().getUsername().equals("justin")));
+        assertTrue(visible.stream().anyMatch(item -> item.getId().equals(justinTask.getId())));
+        assertTrue(visible.stream().noneMatch(item -> item.getId().equals(johnnyTask.getId())));
+    }
+
+    @Test
+    void employeeCanClaimBacklogItemAssignedToSomeoneElse() {
+        WorkflowItem item = service.createItem("Shared backlog task", "Desc", "johnny", "Workflow",
+                Priority.MEDIUM, TaskType.TASK, "manager", null);
+
+        WorkflowItem claimed = service.claimItem(item.getId(), "justin");
+
+        assertEquals("justin", claimed.getAssignee().getUsername());
+        assertEquals(Status.IN_PROGRESS, claimed.getStatus());
+    }
+
+    @Test
+    void employeeCannotClaimNonBacklogItem() {
+        WorkflowItem item = service.createItem("Task", "Desc", "johnny", "Workflow",
+                Priority.MEDIUM, TaskType.TASK, "manager", null);
+        service.updateStatus(item.getId(), Status.IN_PROGRESS, "johnny");
+
+        assertThrows(IllegalStateException.class, () -> service.claimItem(item.getId(), "justin"));
     }
 
     @Test
