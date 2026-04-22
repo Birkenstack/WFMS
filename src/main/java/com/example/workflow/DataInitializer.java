@@ -3,6 +3,8 @@ package com.example.workflow;
 import java.time.LocalDate;
 
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,18 +14,23 @@ public class DataInitializer implements CommandLineRunner {
     private final AppUserRepository userRepository;
     private final WorkflowRepository workflowRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JdbcTemplate jdbcTemplate;
 
     public DataInitializer(AppUserRepository userRepository,
                            WorkflowRepository workflowRepository,
-                           PasswordEncoder passwordEncoder) {
+                           PasswordEncoder passwordEncoder,
+                           JdbcTemplate jdbcTemplate) {
         this.userRepository = userRepository;
         this.workflowRepository = workflowRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Override
     @Transactional
     public void run(String... args) {
+        migrateLegacyStatuses();
+
         AppUser manager = ensureUser("manager", "manager123", "Maya Manager", Role.MANAGER);
         AppUser employeeOne = ensureUser("justin", "employee123", "Justin Employee", Role.EMPLOYEE);
         AppUser employeeTwo = ensureUser("johnny", "employee123", "Johnny Employee", Role.EMPLOYEE);
@@ -89,6 +96,17 @@ public class DataInitializer implements CommandLineRunner {
                 manager,
                 employeeThree,
                 LocalDate.now().plusDays(6));
+    }
+
+    private void migrateLegacyStatuses() {
+        try {
+            jdbcTemplate.execute("ALTER TABLE workflow_item ALTER COLUMN status VARCHAR(32)");
+            jdbcTemplate.update("UPDATE workflow_item SET status = 'BACKLOG' WHERE status = 'SUBMITTED'");
+            jdbcTemplate.update("UPDATE workflow_item SET status = 'ACCEPTED' WHERE status = 'APPROVED'");
+            jdbcTemplate.update("UPDATE workflow_item SET status = 'ACCEPTED' WHERE status = 'COMPLETED'");
+        } catch (DataAccessException ignored) {
+            // Fresh databases or already-migrated schemas do not need the legacy enum rewrite.
+        }
     }
 
     private void migrateLegacyCasey(AppUser replacementAssignee, AppUser fallbackCreator) {
