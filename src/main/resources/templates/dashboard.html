@@ -119,11 +119,6 @@
                 <span th:text="${'Owner: ' + item.assignee.displayName}"></span>
                 <span th:if="${item.dueDate != null}" th:text="${'Due ' + #temporals.format(item.dueDate, 'MMM d')}"></span>
               </div>
-
-              <div class="task-actions">
-                <button type="button" class="secondary open-task-modal">Open</button>
-                <a class="text-link" th:href="@{/items/{id}(id=${item.id})}">Full Page</a>
-              </div>
             </section>
           </div>
         </article>
