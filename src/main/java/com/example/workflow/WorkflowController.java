@@ -55,6 +55,7 @@ public class WorkflowController {
         model.addAttribute("availableStatuses", isManager
                 ? Arrays.asList(Status.values())
                 : Arrays.asList(Status.IN_PROGRESS, Status.IN_REVIEW));
+        model.addAttribute("activityEntries", service.getRecentActivity(username));
         model.addAttribute("priorities", Priority.values());
         model.addAttribute("projects", service.getProjects(username, teamBacklogView));
         model.addAttribute("message", message);

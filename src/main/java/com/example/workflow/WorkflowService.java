@@ -11,10 +11,14 @@ import org.springframework.stereotype.Service;
 public class WorkflowService {
     private final WorkflowRepository workflowRepository;
     private final AppUserRepository userRepository;
+    private final AuditLogRepository auditLogRepository;
 
-    public WorkflowService(WorkflowRepository workflowRepository, AppUserRepository userRepository) {
+    public WorkflowService(WorkflowRepository workflowRepository,
+                           AppUserRepository userRepository,
+                           AuditLogRepository auditLogRepository) {
         this.workflowRepository = workflowRepository;
         this.userRepository = userRepository;
+        this.auditLogRepository = auditLogRepository;
     }
 
     public WorkflowItem createItem(String title, String description, String assigneeUsername,
@@ -30,7 +34,10 @@ public class WorkflowService {
         item.setCreatedAt(LocalDateTime.now());
         item.setArchived(false);
         item.setStatus(Status.BACKLOG);
-        return workflowRepository.save(item);
+        WorkflowItem savedItem = workflowRepository.save(item);
+        recordAudit(savedItem, createdBy, AuditAction.CREATED,
+                "Created this task and assigned it to " + assignee.getDisplayName() + ".");
+        return savedItem;
     }
 
     public WorkflowItem updateItem(Long id, String title, String description, String assigneeUsername,
@@ -40,9 +47,13 @@ public class WorkflowService {
         ensureManager(actor);
 
         WorkflowItem item = getItem(id, actingUsername);
-        item.setAssignee(getUser(assigneeUsername));
+        AppUser assignee = getUser(assigneeUsername);
+        item.setAssignee(assignee);
         applySharedFields(item, title, description, project, priority, taskType, dueDate);
-        return workflowRepository.save(item);
+        WorkflowItem savedItem = workflowRepository.save(item);
+        recordAudit(savedItem, actor, AuditAction.UPDATED,
+                "Updated task details and assigned it to " + assignee.getDisplayName() + ".");
+        return savedItem;
     }
 
     public List<WorkflowItem> getVisibleItems(String username) {
@@ -106,7 +117,10 @@ public class WorkflowService {
 
         item.setAssignee(actor);
         item.setStatus(Status.IN_PROGRESS);
-        return workflowRepository.save(item);
+        WorkflowItem savedItem = workflowRepository.save(item);
+        recordAudit(savedItem, actor, AuditAction.CLAIMED,
+                "Claimed this backlog task and moved it into In Progress.");
+        return savedItem;
     }
 
     public void updateStatus(Long id, Status newStatus, String actingUsername) {
@@ -124,8 +138,11 @@ public class WorkflowService {
                     "Invalid status transition from " + item.getStatus() + " to " + newStatus + ".");
         }
 
+        Status previousStatus = item.getStatus();
         item.setStatus(newStatus);
         workflowRepository.save(item);
+        recordAudit(item, actor, AuditAction.STATUS_CHANGED,
+                "Moved this task from " + formatStatus(previousStatus) + " to " + formatStatus(newStatus) + ".");
     }
 
     public void archiveItem(Long id, String actingUsername) {
@@ -135,6 +152,7 @@ public class WorkflowService {
         WorkflowItem item = getItem(id, actingUsername);
         item.setArchived(true);
         workflowRepository.save(item);
+        recordAudit(item, actor, AuditAction.ARCHIVED, "Archived this accepted task.");
     }
 
     public List<String> getProjects(String username, boolean includeTeamBacklog) {
@@ -149,6 +167,14 @@ public class WorkflowService {
 
     public List<WorkflowItem> getArchivedItems() {
         return workflowRepository.findByArchivedTrueOrderByCreatedAtDesc();
+    }
+
+    public List<AuditLogEntry> getRecentActivity(String username) {
+        AppUser user = getUser(username);
+        return auditLogRepository.findAllByOrderByCreatedAtDesc().stream()
+                .filter(entry -> canViewAuditEntry(user, entry))
+                .limit(20)
+                .toList();
     }
 
     public List<AppUser> getAssignableUsers() {
@@ -183,6 +209,36 @@ public class WorkflowService {
         item.setPriority(priority);
         item.setTaskType(taskType);
         item.setDueDate(dueDate);
+    }
+
+    private boolean canViewAuditEntry(AppUser user, AuditLogEntry entry) {
+        if (user.getRole() == Role.MANAGER) {
+            return true;
+        }
+
+        WorkflowItem item = entry.getWorkflowItem();
+        return entry.getActor().getUsername().equalsIgnoreCase(user.getUsername())
+                || item.getAssignee().getUsername().equalsIgnoreCase(user.getUsername())
+                || item.getCreatedBy().getUsername().equalsIgnoreCase(user.getUsername());
+    }
+
+    private void recordAudit(WorkflowItem item, AppUser actor, AuditAction action, String details) {
+        AuditLogEntry entry = new AuditLogEntry();
+        entry.setWorkflowItem(item);
+        entry.setActor(actor);
+        entry.setAction(action);
+        entry.setDetails(details);
+        entry.setCreatedAt(LocalDateTime.now());
+        auditLogRepository.save(entry);
+    }
+
+    private String formatStatus(Status status) {
+        return switch (status) {
+            case BACKLOG -> "Backlog";
+            case IN_PROGRESS -> "In Progress";
+            case IN_REVIEW -> "In Review";
+            case ACCEPTED -> "Accepted";
+        };
     }
 
     private boolean isValidTransition(Status currentStatus, Status newStatus) {

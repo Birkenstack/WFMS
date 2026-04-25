@@ -1,11 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
   const modal = document.getElementById('task-modal');
-  const closeButton = document.querySelector('.modal-close');
+  const activityModal = document.getElementById('activity-modal');
+  const activityButton = document.getElementById('open-activity-modal');
+  const closeButtons = Array.from(document.querySelectorAll('.modal-close'));
   const cards = Array.from(document.querySelectorAll('.task-card'));
   const columns = Array.from(document.querySelectorAll('.board-column'));
   const dropForm = document.getElementById('status-drop-form');
   const dropId = document.getElementById('status-drop-id');
   const dropStatus = document.getElementById('status-drop-value');
+  const autoSubmitForm = document.querySelector('.auto-submit-filters');
+  const autoSubmitControls = Array.from(document.querySelectorAll('.auto-submit-control'));
 
   if (!modal || !dropForm) {
     return;
@@ -70,11 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     modalFields.archiveForm.hidden = !canArchive;
     modalFields.archiveForm.action = data.archiveUrl || '#';
 
-    if (canClaim) {
-      modalFields.statusForm.hidden = true;
-    } else {
-      modalFields.statusForm.hidden = false;
-    }
+    modalFields.statusForm.hidden = canClaim;
 
     modal.showModal();
   };
@@ -85,6 +85,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     activeCard = null;
   };
+
+  const closeActivityModal = () => {
+    if (activityModal?.open) {
+      activityModal.close();
+    }
+  };
+
+  autoSubmitControls.forEach((control) => {
+    control.addEventListener('change', () => {
+      autoSubmitForm?.requestSubmit();
+    });
+  });
 
   cards.forEach((card) => {
     card.addEventListener('click', (event) => {
@@ -146,7 +158,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  closeButton?.addEventListener('click', closeModal);
+  activityButton?.addEventListener('click', () => {
+    activityModal?.showModal();
+  });
+
+  closeButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      if (button.dataset.closeModal === 'activity-modal') {
+        closeActivityModal();
+        return;
+      }
+      closeModal();
+    });
+  });
 
   modal.addEventListener('click', (event) => {
     const frame = modal.querySelector('.task-modal-frame');
@@ -155,9 +179,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  activityModal?.addEventListener('click', (event) => {
+    const frame = activityModal.querySelector('.task-modal-frame');
+    if (!frame.contains(event.target)) {
+      closeActivityModal();
+    }
+  });
+
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
       closeModal();
+      closeActivityModal();
     }
   });
 });

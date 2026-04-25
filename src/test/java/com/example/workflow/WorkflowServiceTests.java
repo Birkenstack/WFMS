@@ -26,6 +26,9 @@ class WorkflowServiceTests {
     @Autowired
     private AppUserRepository userRepository;
 
+    @Autowired
+    private AuditLogRepository auditLogRepository;
+
     @Test
     void managerCanCreateRichWorkflowItem() {
         WorkflowItem item = service.createItem(
@@ -190,5 +193,45 @@ class WorkflowServiceTests {
         var archivedItems = service.getArchivedItems();
 
         assertTrue(archivedItems.stream().anyMatch(archivedItem -> archivedItem.getId().equals(item.getId())));
+    }
+
+    @Test
+    void createClaimAndStatusUpdatesWriteAuditEntries() {
+        WorkflowItem created = service.createItem("Audit Demo", "Desc", "johnny", "Workflow",
+                Priority.HIGH, TaskType.TASK, "manager", null);
+
+        service.claimItem(created.getId(), "justin");
+        service.updateStatus(created.getId(), Status.IN_REVIEW, "justin");
+
+        var activity = auditLogRepository.findAllByOrderByCreatedAtDesc();
+
+        assertTrue(activity.stream().anyMatch(entry ->
+                entry.getAction() == AuditAction.CREATED
+                        && entry.getWorkflowItem().getId().equals(created.getId())));
+        assertTrue(activity.stream().anyMatch(entry ->
+                entry.getAction() == AuditAction.CLAIMED
+                        && entry.getActor().getUsername().equals("justin")));
+        assertTrue(activity.stream().anyMatch(entry ->
+                entry.getAction() == AuditAction.STATUS_CHANGED
+                        && entry.getDetails().contains("In Review")));
+    }
+
+    @Test
+    void employeeRecentActivityOnlyShowsRelevantEntries() {
+        WorkflowItem justinTask = service.createItem("Justin task", "Desc", "justin", "Workflow",
+                Priority.MEDIUM, TaskType.TASK, "manager", null);
+        WorkflowItem johnnyTask = service.createItem("Johnny task", "Desc", "johnny", "Workflow",
+                Priority.MEDIUM, TaskType.TASK, "manager", null);
+
+        service.updateStatus(justinTask.getId(), Status.IN_PROGRESS, "justin");
+        service.updateStatus(johnnyTask.getId(), Status.IN_PROGRESS, "johnny");
+
+        var justinActivity = service.getRecentActivity("justin");
+
+        assertTrue(justinActivity.stream().anyMatch(entry ->
+                entry.getWorkflowItem().getId().equals(justinTask.getId())));
+        assertTrue(justinActivity.stream().noneMatch(entry ->
+                entry.getWorkflowItem().getId().equals(johnnyTask.getId())
+                        && entry.getActor().getUsername().equals("johnny")));
     }
 }

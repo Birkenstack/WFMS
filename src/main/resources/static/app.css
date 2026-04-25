@@ -1,19 +1,20 @@
 :root {
-  --bg: #f1eadc;
-  --surface: rgba(255, 248, 238, 0.92);
-  --surface-strong: #fffdf8;
-  --surface-deep: #f7efdf;
-  --ink: #1f2937;
-  --muted: #6b7280;
-  --line: #d7c6a5;
-  --line-strong: #c8b289;
-  --accent: #0f766e;
-  --accent-strong: #115e59;
-  --accent-soft: rgba(15, 118, 110, 0.12);
-  --danger: #b91c1c;
-  --warning: #a16207;
-  --shadow: 0 18px 40px rgba(37, 46, 66, 0.08);
-  --shadow-strong: 0 22px 60px rgba(33, 41, 58, 0.16);
+  --bg: #f5f5f7;
+  --bg-alt: #fbfbfd;
+  --surface: rgba(255, 255, 255, 0.94);
+  --surface-strong: #ffffff;
+  --surface-deep: #f2f2f5;
+  --ink: #1d1d1f;
+  --muted: #6e6e73;
+  --line: #d2d2d7;
+  --line-strong: #c7c7cc;
+  --accent: #0071e3;
+  --accent-strong: #0058b0;
+  --accent-soft: rgba(0, 113, 227, 0.1);
+  --danger: #c9342f;
+  --warning: #8f6b2f;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  --shadow-strong: 0 18px 50px rgba(0, 0, 0, 0.12);
 }
 
 * {
@@ -22,12 +23,11 @@
 
 body {
   margin: 0;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
   color: var(--ink);
-  background:
-    radial-gradient(circle at top left, rgba(15, 118, 110, 0.14), transparent 28%),
-    radial-gradient(circle at top right, rgba(180, 83, 9, 0.14), transparent 24%),
-    linear-gradient(180deg, #fbf7ef 0%, var(--bg) 100%);
+  background: linear-gradient(180deg, var(--bg-alt) 0%, var(--bg) 100%);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 a {
@@ -47,9 +47,9 @@ textarea {
 }
 
 .shell {
-  max-width: 1280px;
+  max-width: 1320px;
   margin: 0 auto;
-  padding: 32px 20px 48px;
+  padding: 32px 24px 56px;
 }
 
 .hero,
@@ -59,36 +59,30 @@ textarea {
 .login-card,
 .detail-card {
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 22px;
+  border: 1px solid rgba(210, 210, 215, 0.88);
+  border-radius: 18px;
   box-shadow: var(--shadow);
 }
 
 .hero,
 .panel,
 .login-card {
-  backdrop-filter: blur(10px);
+  backdrop-filter: saturate(180%) blur(18px);
 }
 
 .hero,
 .panel {
-  padding: 26px;
+  padding: 28px;
 }
 
 .hero {
   position: relative;
   overflow: hidden;
-  margin-bottom: 22px;
+  margin-bottom: 24px;
 }
 
 .hero::after {
-  content: "";
-  position: absolute;
-  inset: auto -80px -90px auto;
-  width: 220px;
-  height: 220px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(15, 118, 110, 0.12), transparent 65%);
+  display: none;
 }
 
 .hero-top,
@@ -118,13 +112,14 @@ textarea {
 .login-card h1,
 .panel h1 {
   margin: 0 0 8px;
-  font-size: clamp(2rem, 4vw, 3rem);
-  line-height: 0.98;
-  letter-spacing: -0.03em;
+  font-size: clamp(2rem, 4vw, 2.7rem);
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+  font-weight: 650;
 }
 
 .panel h1 {
-  font-size: 2.35rem;
+  font-size: 2.15rem;
 }
 
 .subtle {
@@ -134,20 +129,21 @@ textarea {
 .eyebrow {
   margin: 0;
   text-transform: uppercase;
-  letter-spacing: 0.16em;
-  font-size: 0.74rem;
-  color: var(--warning);
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-weight: 600;
 }
 
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 14px;
+  padding: 7px 13px;
   border-radius: 999px;
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.82);
-  font-size: 0.92rem;
+  border: 1px solid rgba(210, 210, 215, 0.88);
+  background: rgba(255, 255, 255, 0.84);
+  font-size: 0.9rem;
 }
 
 .role-manager {
@@ -155,12 +151,12 @@ textarea {
 }
 
 .role-employee {
-  color: var(--warning);
+  color: #4d5967;
 }
 
 .toolbar {
   flex-wrap: wrap;
-  margin-top: 22px;
+  margin-top: 24px;
 }
 
 .toolbar form,
@@ -184,8 +180,9 @@ textarea {
 }
 
 label {
-  font-size: 0.92rem;
+  font-size: 0.9rem;
   color: var(--muted);
+  font-weight: 500;
 }
 
 input,
@@ -193,9 +190,9 @@ select,
 textarea {
   min-height: 46px;
   padding: 10px 12px;
-  border-radius: 14px;
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.92);
+  border-radius: 12px;
+  border: 1px solid rgba(210, 210, 215, 0.94);
+  background: rgba(255, 255, 255, 0.98);
   color: var(--ink);
 }
 
@@ -204,7 +201,7 @@ select:focus,
 textarea:focus,
 button:focus,
 .task-card:focus {
-  outline: 2px solid rgba(15, 118, 110, 0.24);
+  outline: 2px solid rgba(0, 113, 227, 0.18);
   outline-offset: 2px;
 }
 
@@ -226,20 +223,21 @@ button,
   color: white;
   cursor: pointer;
   text-decoration: none;
-  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+  transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease, border-color 140ms ease;
+  font-weight: 500;
 }
 
 button:hover,
 .button-link:hover {
   transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(15, 118, 110, 0.16);
+  box-shadow: 0 8px 18px rgba(0, 113, 227, 0.14);
   text-decoration: none;
 }
 
 button.secondary,
 .button-link.secondary {
-  background: transparent;
-  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(210, 210, 215, 0.95);
   color: var(--ink);
   box-shadow: none;
 }
@@ -250,22 +248,22 @@ button.danger {
 
 .text-link {
   align-self: center;
-  font-size: 0.94rem;
+  font-size: 0.92rem;
 }
 
 .notice {
   margin: 16px 0 0;
   padding: 12px 14px;
-  border-radius: 14px;
+  border-radius: 12px;
 }
 
 .notice.success {
-  background: rgba(15, 118, 110, 0.1);
+  background: rgba(0, 113, 227, 0.08);
   color: var(--accent-strong);
 }
 
 .notice.error {
-  background: rgba(185, 28, 28, 0.1);
+  background: rgba(201, 52, 47, 0.08);
   color: var(--danger);
 }
 
@@ -290,26 +288,27 @@ button.danger {
 .board-column {
   padding: 16px;
   min-height: 460px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(247, 239, 223, 0.88));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(246, 246, 248, 0.96));
   transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
 }
 
 .board-column.drop-target {
-  border-color: var(--accent);
+  border-color: rgba(0, 113, 227, 0.36);
   transform: translateY(-2px);
   box-shadow: var(--shadow-strong);
 }
 
 .board-column h2 {
   margin: 0 0 8px;
-  font-size: 1.05rem;
+  font-size: 1.02rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .column-count {
   margin: 0 0 14px;
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
 }
 
 .task-list {
@@ -319,16 +318,16 @@ button.danger {
 }
 
 .task-card {
-  padding: 15px;
+  padding: 16px;
   background: var(--surface-strong);
   cursor: pointer;
   transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
 }
 
 .task-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 18px 34px rgba(29, 38, 55, 0.1);
-  border-color: var(--line-strong);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+  border-color: rgba(0, 113, 227, 0.2);
 }
 
 .task-card.dragging {
@@ -338,14 +337,15 @@ button.danger {
 
 .task-card h3 {
   margin: 12px 0 8px;
-  font-size: 1.08rem;
-  line-height: 1.25;
+  font-size: 1.02rem;
+  line-height: 1.28;
+  letter-spacing: -0.015em;
 }
 
 .task-handle {
-  color: var(--line-strong);
-  font-weight: bold;
-  letter-spacing: 0.12em;
+  color: #b3b3b8;
+  font-weight: 600;
+  letter-spacing: 0.08em;
 }
 
 .task-tags,
@@ -360,9 +360,10 @@ button.danger {
   display: inline-flex;
   padding: 4px 10px;
   border-radius: 999px;
-  background: #f3ecde;
-  border: 1px solid var(--line);
-  font-size: 0.84rem;
+  background: #f5f5f7;
+  border: 1px solid rgba(210, 210, 215, 0.95);
+  font-size: 0.82rem;
+  color: #515154;
 }
 
 .task-summary {
@@ -413,7 +414,8 @@ button.danger {
 
 .detail-title {
   margin: 18px 0 10px;
-  font-size: 2rem;
+  font-size: 1.9rem;
+  letter-spacing: -0.03em;
 }
 
 .detail-description {
@@ -434,6 +436,7 @@ button.danger {
 
 .detail-card h3 {
   margin: 0 0 12px;
+  font-size: 0.98rem;
 }
 
 .detail-list {
@@ -446,7 +449,7 @@ button.danger {
 
 .detail-list dt {
   margin-bottom: 4px;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: var(--muted);
 }
 
@@ -462,23 +465,23 @@ button.danger {
   width: min(860px, calc(100vw - 28px));
   border: 0;
   padding: 0;
-  border-radius: 26px;
+  border-radius: 22px;
   background: transparent;
   box-shadow: none;
 }
 
 .task-modal::backdrop {
-  background: rgba(28, 32, 44, 0.44);
-  backdrop-filter: blur(5px);
+  background: rgba(29, 29, 31, 0.22);
+  backdrop-filter: blur(10px);
 }
 
 .task-modal-frame {
   position: relative;
-  background: linear-gradient(180deg, rgba(255, 252, 246, 0.98), rgba(250, 241, 226, 0.98));
-  border: 1px solid var(--line);
-  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(210, 210, 215, 0.94);
+  border-radius: 22px;
   box-shadow: var(--shadow-strong);
-  padding: 22px;
+  padding: 24px;
 }
 
 .task-modal-head {
@@ -496,9 +499,9 @@ button.danger {
 
 .modal-close {
   min-height: 38px;
-  background: transparent;
+  background: rgba(255, 255, 255, 0.72);
   color: var(--muted);
-  border: 1px solid var(--line);
+  border: 1px solid rgba(210, 210, 215, 0.9);
 }
 
 .modal-actions {
@@ -529,12 +532,13 @@ button.danger {
   min-height: 100vh;
   display: grid;
   place-items: center;
-  padding: 20px;
+  padding: 24px;
+  background: linear-gradient(180deg, #fafafc 0%, #f2f2f5 100%);
 }
 
 .login-card {
   width: min(980px, 100%);
-  padding: 30px;
+  padding: 32px;
 }
 
 .login-layout {
@@ -552,9 +556,9 @@ button.danger {
 .login-side {
   flex: 0 1 300px;
   padding: 22px;
-  border-radius: 20px;
-  background: linear-gradient(180deg, rgba(15, 118, 110, 0.12), rgba(180, 83, 9, 0.08));
-  border: 1px solid rgba(15, 118, 110, 0.2);
+  border-radius: 16px;
+  background: #f7f7f9;
+  border: 1px solid rgba(210, 210, 215, 0.92);
 }
 
 .demo-list {
@@ -564,6 +568,70 @@ button.danger {
 
 .demo-list li + li {
   margin-top: 8px;
+}
+
+.view-toggle {
+  display: inline-flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.active-toggle {
+  background: var(--accent-soft) !important;
+  border-color: rgba(0, 113, 227, 0.18) !important;
+}
+
+.board-single {
+  grid-template-columns: minmax(280px, 420px);
+}
+
+.activity-title {
+  margin: 4px 0 0;
+  font-size: 1.45rem;
+  letter-spacing: -0.03em;
+}
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.activity-entry {
+  padding: 16px 18px;
+  border: 1px solid rgba(210, 210, 215, 0.9);
+  border-radius: 16px;
+  background: #f9f9fb;
+}
+
+.activity-entry-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.activity-item-title {
+  margin: 0 0 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.activity-meta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.activity-details {
+  margin: 10px 0 0;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.activity-badge {
+  text-transform: capitalize;
 }
 
 @media (max-width: 1080px) {
@@ -619,7 +687,8 @@ button.danger {
   .board-column,
   .hero,
   .panel,
-  .login-card {
-    border-radius: 18px;
+  .login-card,
+  .detail-card {
+    border-radius: 16px;
   }
 }
