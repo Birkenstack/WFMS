@@ -106,7 +106,8 @@
               <div class="task-card-top">
                 <div class="task-tags">
                   <span th:text="${item.project}"></span>
-                  <span th:text="${item.priority}"></span>
+                  <span th:classappend="${' priority-tag priority-' + #strings.toLowerCase(item.priority.name())}"
+                        th:text="${item.priority}"></span>
                 </div>
                 <span class="task-handle" aria-hidden="true">::</span>
               </div>
@@ -143,7 +144,7 @@
             <div class="task-tags modal-tags">
               <span id="modal-project"></span>
               <span id="modal-type"></span>
-              <span id="modal-priority"></span>
+              <span id="modal-priority" class="priority-tag"></span>
               <span id="modal-status"></span>
             </div>
             <p class="detail-id" id="modal-id"></p>

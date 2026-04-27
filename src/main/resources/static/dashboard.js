@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     modalFields.project.textContent = data.project;
     modalFields.type.textContent = data.taskType;
     modalFields.priority.textContent = data.priority;
+    modalFields.priority.className = `priority-tag priority-${data.priority.toLowerCase()}`;
     modalFields.status.textContent = data.status;
     modalFields.assignee.textContent = data.assignee;
     modalFields.createdBy.textContent = data.createdBy;
